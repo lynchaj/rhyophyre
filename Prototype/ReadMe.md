@@ -9,3 +9,19 @@ Important construction notes:
 - the IS61C256 chips are just standard 32Kx8 cache SRAMs from old 486 motherboards and most any kind should work
 - the MC78T05CT are rather special though as they are 5V DC voltage regulators capable of 3A sustained operation while most 7805 style VR can do 1.5A or 2.2A max
 - there are three ways to power the board and you only need to install parts for the kind you use.  There is a 9VDC unregulated center positive barrel jack connector (5.5x2.1mm), a PC power supply Molex drive connector, and a 2 wire input screw terminal for bench power supply.  Choose one to use and install its hardware
+
+Threshold Goals:
+- implement Z180 SBC with uPD7220 GDC subsystem
+- run RomWBW as supported platform
+- use uPD7220 GDC as video console display (text mode)
+- use PS/2 keyboard as console input
+- 640x480 16 color VGA display using standard monitor
+- 74LSxx glue logic
+
+Objectives:
+- GSX-80 implementation
+- uPD72020 support (CMOS version of uPD7220)
+- implement DMA interface for uPD7220
+- PS/2 mouse support
+- 800x600 16 color VGA display using standard monitor
+- 74HCTxx glue logic
