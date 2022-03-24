@@ -16,7 +16,7 @@ Threshold Goals:
 - use uPD7220 GDC as video console display (text mode)
 - use PS/2 keyboard as console input
 - 640x480 16 color VGA display using standard monitor
-- 74LSxx glue logic
+- default power consumption with 74LSxx & 74Fxx glue logic
 
 Objectives:
 - GSX-80 implementation
@@ -24,4 +24,4 @@ Objectives:
 - implement DMA interface for uPD7220
 - PS/2 mouse support
 - 800x600 16 color VGA display using standard monitor
-- 74HCTxx glue logic
+- reduced power consumption with 74HCTxx & 74ACTxx glue logic
