@@ -9,6 +9,7 @@ Important construction notes:
 - the IS61C256 chips are standard 32Kx8 cache SRAMs from old 486 motherboards and most any kind should work
 - the MC78T05CT are rather special though as they are 5V DC voltage regulators capable of 3A sustained operation while most 7805 style VR can do 1.5A or 2.2A max
 - there are three ways to power the board and you only need to install parts for the kind you use.  There is a 9VDC unregulated center positive barrel jack connector (5.5x2.1mm), a PC power supply Molex drive connector, and a 2 wire input screw terminal for bench power supply.  Choose one to use and install its hardware
+- note that the BT478 PLCC-44 socket is rotated 90 degrees to the left so that the label reads left to right consistent with the Z180.  You must install the PLCC-44 socket in the proper orientation for it to work.
 
 Threshold Goals:
 - implement Z180 SBC with uPD7220 GDC subsystem
