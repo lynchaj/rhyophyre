@@ -4,7 +4,7 @@ rhyophyre is a single board computer featuring a Z180 processor and NEC µPD7220
 
 Important construction notes:
 - the silkscreen for capacitor C46 value (0.1u) is missing.  C46 is just above U6 and this is pretty obviously a 0.1u bypass capacitor
-- the footprints on the PCB for the diodes D1, D4, D5, D7, D8, D9, and D10-D15 are reversed due to a import error from an earlier version of KiCAD.  Be sure to install these diodes *in reverse* of what the PCB footprints indicate
+- the footprints on the PCB for the diodes D1, D4, D5, D7, D8, D9, and D10-D15 are reversed due to an import error from an earlier version of KiCAD.  Be sure to install these diodes *in reverse* of what the PCB footprints indicate
 - the BT478 are available on eBay as there are several vendors also probably UTSource
 - the IS61C256 chips are standard 32Kx8 cache SRAMs from old 486 motherboards and most any kind should work
 - the MC78T05CT are rather special though as they are 5V DC voltage regulators capable of 3A sustained operation while most 7805 style VR can do 1.5A or 2.2A max
