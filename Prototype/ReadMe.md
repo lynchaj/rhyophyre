@@ -12,7 +12,7 @@ Important construction notes:
 - there are three ways to power the board and you only need to install parts for the kind you use.  There is a 9VDC unregulated center positive barrel jack connector (5.5x2.1mm), a PC power supply Molex drive connector, and a 2 wire input screw terminal for bench power supply.  Choose one to use and install its hardware
 - note that the BT478 PLCC-44 socket is rotated 90 degrees to the left so that the label reads left to right consistent with the Z180.  You must install the PLCC-44 socket in the proper orientation (pin 1 facing left) for it to work
 - CPU needs 4.7K pull ups installed on WAIT#, BUSRQ#, INT2#, DREQ0#, and DREQ1# pins.  Add 4.7K SIP in patch area and run jumper wires as needed
-- install RUN/HALT LED reverse against silkscreen to get green for RUN and red for HALT
+- install RUN/HALT LED reverse against silkscreen to get green for RUN and red for HALT (note: it depends on what sort of bi-color LED you have.  Some are red-green and others are green-red.  My suggestion is to try it out before soldering it in.  Even loosely placing the LED in the PCB while the board is running will give you an idea of orientation)
 
 
 
