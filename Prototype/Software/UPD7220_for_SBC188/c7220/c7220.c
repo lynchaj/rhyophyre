@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "sbc188.h"
+#include "rhyophyre.h"
 
 #define abs(v) ((v)<0?-(v):(v))
 
@@ -44,45 +44,6 @@ struct Area {
     byte WD	    : 1;	/* MBZ */
 } area;
 
-
-
-#if 0    // remove this
-static
-byte inp(word port);
-
-#asm
-    .text
-_inp:
-    push bp
-    mov bp,sp
-    push dx
-    mov dx,4[bp]
-    in al,dx
-    xor ah,ah
-    pop dx
-    pop bp
-    ret    
-#endasm
-
-static
-void outp(word port, byte data);
-#asm
-    .text
-_outp:
-    push bp
-    mov	bp,sp
-    push dx
-    mov dx,4[bp]
-    mov	al,6[bp]
-    out dx,al
-    pop dx
-    pop bp
-    ret
-#endasm
-#endif      // end of killed area
-
-
-
 void gdc_putc(byte command)
 {
     while (inp(gdc_status) & GDC_FIFO_FULL) ;	/* spin here */
@@ -94,7 +55,6 @@ void gdc_putp(byte parameter)
     while (inp(gdc_status) & GDC_FIFO_FULL) ;	/* spin here */
     outp(gdc_param, parameter);
 }
-
 
 void gdc_sync_params(void)
 {
@@ -331,7 +291,7 @@ void gdc_hline(int x1, int x2, int y, byte mode)
 void gdc_line(int x1, int y1, int x2, int y2)
 {
     int dx, dy, DC, D1, D2, D;
-    static const tran[8] = {0,1,3,2,7,6,4,5};
+    static const int tran[8] = {0,1,3,2,7,6,4,5};
     byte dir = 0;
 
     gdc_setcursor((word)x1, (word)y1);    
