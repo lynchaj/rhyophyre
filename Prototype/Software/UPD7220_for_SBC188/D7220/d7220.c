@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "sbc188.h"
+#include "rhyophyre.h"
 
 #define abs(v) ((v)<0?-(v):(v))
 
@@ -102,12 +102,12 @@ Palette default_palette = {
    {255, 255, 255} };
 
 
-ramdac_overlay(byte overlay)
+void ramdac_overlay(byte overlay)
 {
    outp(ramdac_latch, (overlay & LATCH_OVERLAY_MASK) | LATCH_RAMDAC_256 );
 }
 
-ramdac_set_overlay_color(byte overlay, Colors color)
+void ramdac_set_overlay_color(byte overlay, Colors color)
 {
    outp(ramdac_overlay_wr, overlay);
    outp(ramdac_overlay_ram, color[Red]);
@@ -115,7 +115,7 @@ ramdac_set_overlay_color(byte overlay, Colors color)
    outp(ramdac_overlay_ram, color[Blue]);
 }
 
-ramdac_set_palette_color(byte index, Colors color)
+void ramdac_set_palette_color(byte index, Colors color)
 {
    outp(ramdac_address_wr, index);
    outp(ramdac_palette_ram, color[Red]);
@@ -123,13 +123,13 @@ ramdac_set_palette_color(byte index, Colors color)
    outp(ramdac_palette_ram, color[Blue]);
 }
 
-ramdac_set_read_mask(byte mask)
+void ramdac_set_read_mask(byte mask)
 {
 /* set the pixel read mask */
    outp(ramdac_pixel_read_mask, mask);
 }
 
-ramdac_init(void)
+void ramdac_init(void)
 {
    int i;
 
@@ -390,7 +390,7 @@ void gdc_hline(int x1, int x2, int y, byte mode)
 void gdc_line(int x1, int y1, int x2, int y2)
 {
     int dx, dy, DC, D1, D2, D;
-    static const tran[8] = {0,1,3,2,7,6,4,5};
+    static const int tran[8] = {0,1,3,2,7,6,4,5};
     byte dir = 0;
 
     gdc_setcursor((word)x1, (word)y1);    
