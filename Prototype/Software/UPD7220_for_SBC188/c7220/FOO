@@ -1,0 +1,22 @@
+   compiling
+c7220.c
+c7220.c(379) : warning C4090: 'argument' : different const or volatile qualifiers
+c7220.c(379) : warning C4024: 'gdc_pram' : different types for formal and actual parameter 2
+c7220.c(411) : warning C4090: 'argument' : different const or volatile qualifiers
+c7220.c(411) : warning C4024: 'gdc_pram' : different types for formal and actual parameter 2
+c7220.c(449) : warning C4090: 'argument' : different const or volatile qualifiers
+c7220.c(449) : warning C4024: 'gdc_pram' : different types for formal and actual parameter 2
+c7220.c(138) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(144) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(156) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(175) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(187) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(194) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(230) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(243) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(299) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(315) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(324) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(359) : warning C4761: integral size mismatch in argument : conversion supplied
+c7220.c(453) : warning C4761: integral size mismatch in argument : conversion supplied
+ done

@@ -1,0 +1,627 @@
+00001                                           !BCC_EOS
+00002                                           !BCC_EOS
+00003                                           export	_cprintf
+00004                       00000000>           _cprintf:
+00005                                           !BCC_EOS
+00006                                           !BCC_EOS
+00007 0000           55                         push	bp
+00008 0001           89E5                       mov	bp,sp
+00009                                           if cprintf.off=0
+00010 0003           57                         push	di
+00011 0004           56                         push	si
+00012                                           endif
+00013 0005           83C4                   FC  add	sp,*-4
+00014 0008           31C0                       xor	ax,ax
+00015 000A           8946         F8            mov	-8+cprintf.off[bp],ax
+00016                                           !BCC_EOS
+00017                                           !BCC_EOS
+00018                                           !BCC_EOS
+00019                                           !BCC_EOS
+00020 000D           83C4                   F5  add	sp,*-$B
+00021 0010           C646         ED        20  mov	byte ptr -$13+cprintf.off[bp],*$20
+00022                                           !BCC_EOS
+00023                                           !BCC_EOS
+00024                                           !BCC_EOS
+00025 0014           83C4                   F9  add	sp,*-7
+00026 0017           8D5E         06            lea	bx,6[bp]
+00027 001A           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00028                                           !BCC_EOS
+00029 001D           E9         030C            br 	.2
+00030                       00000020>           .3:
+00031 0020           FF46         F8            inc	word ptr -8+cprintf.off[bp]
+00032                                           !BCC_EOS
+00033 0023           837E         FA        25  cmp	word ptr -6+cprintf.off[bp],*$25
+00034 0027           74           1A            je  	.4
+00035                       00000029>           .5:
+00036 0029           837E         FA        0A  cmp	word ptr -6+cprintf.off[bp],*$A
+00037 002D           75           09            jne 	.6
+00038                       0000002F>           .7:
+00039 002F           B8                   000D  mov	ax,*$D
+00040 0032           50                         push	ax
+00041 0033           E8         0000>           call	_bios_putc
+00042 0036           44                         inc	sp
+00043 0037           44                         inc	sp
+00044                                           !BCC_EOS
+00045                       00000038>           .6:
+00046 0038           FF76         FA            push	-6+cprintf.off[bp]
+00047 003B           E8         0000>           call	_bios_putc
+00048 003E           44                         inc	sp
+00049 003F           44                         inc	sp
+00050                                           !BCC_EOS
+00051 0040           E9         02E9            br 	.8
+00052                       00000043>           .4:
+00053 0043           C746         F6      0001  mov	word ptr -$A+cprintf.off[bp],*1
+00054                                           !BCC_EOS
+00055 0048           8B5E         04            mov	bx,4[bp]
+00056 004B           8A07                       mov	al,[bx]
+00057 004D           8846         ED            mov	-$13+cprintf.off[bp],al
+00058                                           !BCC_EOS
+00059 0050           31C0                       xor	ax,ax
+00060 0052           8946         EA            mov	-$16+cprintf.off[bp],ax
+00061 0055           8946         E8            mov	-$18+cprintf.off[bp],ax
+00062                                           !BCC_EOS
+00063 0058           807E         ED        2D  cmp	byte ptr -$13+cprintf.off[bp],*$2D
+00064 005C           75           03            jne 	.9
+00065                       0000005E>           .A:
+00066 005E           FF46         04            inc	word ptr 4[bp]
+00067                                           !BCC_EOS
+00068                       00000061>           .9:
+00069                                           !BCC_EOS
+00070                                           !BCC_EOS
+00071                       00000061>           .D:
+00072 0061           8B5E         04            mov	bx,4[bp]
+00073 0064           FF46         04            inc	word ptr 4[bp]
+00074 0067           8A07                       mov	al,[bx]
+00075 0069           30E4                       xor	ah,ah
+00076 006B           8946         FA            mov	-6+cprintf.off[bp],ax
+00077 006E           3D                   0030  cmp	ax,*$30
+00078 0071           7C           06            jl  	.F
+00079                       00000073>           .10:
+00080 0073           837E         FA        39  cmp	word ptr -6+cprintf.off[bp],*$39
+00081 0077           7E           02            jle 	.E
+00082                       00000079>           .F:
+00083 0079           EB           1E            jmp .B
+00084                                           !BCC_EOS
+00085                       0000007B>           .E:
+00086 007B           8B46         EA            mov	ax,-$16+cprintf.off[bp]
+00087 007E           89C2                       mov	dx,ax
+00088 0080           D1E0                       shl	ax,*1
+00089 0082           D1E0                       shl	ax,*1
+00090 0084           01D0                       add	ax,dx
+00091 0086           D1E0                       shl	ax,*1
+00092 0088           8946         EA            mov	-$16+cprintf.off[bp],ax
+00093                                           !BCC_EOS
+00094 008B           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00095 008E           05                   FFD0  add	ax,*-$30
+00096 0091           0346         EA            add	ax,-$16+cprintf.off[bp]
+00097 0094           8946         EA            mov	-$16+cprintf.off[bp],ax
+00098                                           !BCC_EOS
+00099                       00000097>           .C:
+00100 0097           EB           C8            jmp	.D
+00101                       00000099>           .B:
+00102 0099           837E         FA        2E  cmp	word ptr -6+cprintf.off[bp],*$2E
+00103 009D           75           38            jne 	.11
+00104                       0000009F>           .12:
+00105                                           !BCC_EOS
+00106                                           !BCC_EOS
+00107                       0000009F>           .15:
+00108 009F           8B5E         04            mov	bx,4[bp]
+00109 00A2           FF46         04            inc	word ptr 4[bp]
+00110 00A5           8A07                       mov	al,[bx]
+00111 00A7           30E4                       xor	ah,ah
+00112 00A9           8946         FA            mov	-6+cprintf.off[bp],ax
+00113 00AC           3D                   0030  cmp	ax,*$30
+00114 00AF           7C           06            jl  	.17
+00115                       000000B1>           .18:
+00116 00B1           837E         FA        39  cmp	word ptr -6+cprintf.off[bp],*$39
+00117 00B5           7E           02            jle 	.16
+00118                       000000B7>           .17:
+00119 00B7           EB           1E            jmp .13
+00120                                           !BCC_EOS
+00121                       000000B9>           .16:
+00122 00B9           8B46         E8            mov	ax,-$18+cprintf.off[bp]
+00123 00BC           89C2                       mov	dx,ax
+00124 00BE           D1E0                       shl	ax,*1
+00125 00C0           D1E0                       shl	ax,*1
+00126 00C2           01D0                       add	ax,dx
+00127 00C4           D1E0                       shl	ax,*1
+00128 00C6           8946         E8            mov	-$18+cprintf.off[bp],ax
+00129                                           !BCC_EOS
+00130 00C9           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00131 00CC           05                   FFD0  add	ax,*-$30
+00132 00CF           0346         E8            add	ax,-$18+cprintf.off[bp]
+00133 00D2           8946         E8            mov	-$18+cprintf.off[bp],ax
+00134                                           !BCC_EOS
+00135                       000000D5>           .14:
+00136 00D5           EB           C8            jmp	.15
+00137                       000000D7>           .13:
+00138                       000000D7>           .11:
+00139 00D7           807E         ED        2D  cmp	byte ptr -$13+cprintf.off[bp],*$2D
+00140 00DB           75           0A            jne 	.19
+00141                       000000DD>           .1A:
+00142 00DD           31C0                       xor	ax,ax
+00143 00DF           2B46         EA            sub	ax,-$16+cprintf.off[bp]
+00144 00E2           8946         EA            mov	-$16+cprintf.off[bp],ax
+00145                                           !BCC_EOS
+00146 00E5           EB           0A            jmp .1B
+00147                       000000E7>           .19:
+00148 00E7           807E         ED        30  cmp	byte ptr -$13+cprintf.off[bp],*$30
+00149 00EB           74           04            je  	.1C
+00150                       000000ED>           .1D:
+00151 00ED           C646         ED        20  mov	byte ptr -$13+cprintf.off[bp],*$20
+00152                                           !BCC_EOS
+00153                       000000F1>           .1C:
+00154                       000000F1>           .1B:
+00155 00F1           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00156 00F4           85C0                       test	ax,ax
+00157 00F6           75           03            jne 	.1E
+00158                       000000F8>           .1F:
+00159 00F8           E9         0245            br 	.1
+00160                                           !BCC_EOS
+00161                       000000FB>           .1E:
+00162 00FB           837E         FA        68  cmp	word ptr -6+cprintf.off[bp],*$68
+00163 00FF           75           14            jne 	.20
+00164                       00000101>           .21:
+00165 0101           8B5E         04            mov	bx,4[bp]
+00166 0104           FF46         04            inc	word ptr 4[bp]
+00167 0107           8A07                       mov	al,[bx]
+00168 0109           30E4                       xor	ah,ah
+00169 010B           8946         FA            mov	-6+cprintf.off[bp],ax
+00170                                           !BCC_EOS
+00171 010E           31C0                       xor	ax,ax
+00172 0110           8946         F6            mov	-$A+cprintf.off[bp],ax
+00173                                           !BCC_EOS
+00174 0113           EB           18            jmp .22
+00175                       00000115>           .20:
+00176 0115           837E         FA        6C  cmp	word ptr -6+cprintf.off[bp],*$6C
+00177 0119           75           12            jne 	.23
+00178                       0000011B>           .24:
+00179 011B           8B5E         04            mov	bx,4[bp]
+00180 011E           FF46         04            inc	word ptr 4[bp]
+00181 0121           8A07                       mov	al,[bx]
+00182 0123           30E4                       xor	ah,ah
+00183 0125           8946         FA            mov	-6+cprintf.off[bp],ax
+00184                                           !BCC_EOS
+00185 0128           C746         F6      0002  mov	word ptr -$A+cprintf.off[bp],*2
+00186                                           !BCC_EOS
+00187                       0000012D>           .23:
+00188                       0000012D>           .22:
+00189 012D           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00190 0130           E9         01CA            br 	.27
+00191                       00000133>           .28:
+00192 0133           C746         F4      0010  mov	word ptr -$C+cprintf.off[bp],*$10
+00193                                           !BCC_EOS
+00194 0138           8B46         F6            mov	ax,-$A+cprintf.off[bp]
+00195 013B           0C                     04  or	al,*4
+00196 013D           8946         F6            mov	-$A+cprintf.off[bp],ax
+00197                                           !BCC_EOS
+00198 0140           EB           0D            jmp .29
+00199                       00000142>           .2A:
+00200                       00000142>           .2B:
+00201 0142           C746         F4      0008  mov	word ptr -$C+cprintf.off[bp],*8
+00202                                           !BCC_EOS
+00203 0147           8B46         F6            mov	ax,-$A+cprintf.off[bp]
+00204 014A           0C                     04  or	al,*4
+00205 014C           8946         F6            mov	-$A+cprintf.off[bp],ax
+00206                                           !BCC_EOS
+00207                       0000014F>           .29:
+00208 014F           EB           0D            jmp .2C
+00209                       00000151>           .2D:
+00210                       00000151>           .2E:
+00211 0151           C746         F4      000A  mov	word ptr -$C+cprintf.off[bp],*$A
+00212                                           !BCC_EOS
+00213 0156           8B46         F6            mov	ax,-$A+cprintf.off[bp]
+00214 0159           0C                     04  or	al,*4
+00215 015B           8946         F6            mov	-$A+cprintf.off[bp],ax
+00216                                           !BCC_EOS
+00217                       0000015E>           .2C:
+00218 015E           EB           05            jmp .2F
+00219                       00000160>           .30:
+00220                       00000160>           .31:
+00221 0160           C746         F4      FFF6  mov	word ptr -$C+cprintf.off[bp],*-$A
+00222                                           !BCC_EOS
+00223                       00000165>           .2F:
+00224 0165           8B46         F6            mov	ax,-$A+cprintf.off[bp]
+00225 0168           E9         0094            br 	.34
+00226                       0000016B>           .35:
+00227 016B           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00228 016E           43                         inc	bx
+00229 016F           43                         inc	bx
+00230 0170           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00231 0173           8B47         FE            mov	ax,-2[bx]
+00232 0176           99                         cwd
+00233 0177           89D3                       mov	bx,dx
+00234 0179           8946         F0            mov	-$10+cprintf.off[bp],ax
+00235 017C           895E         F2            mov	-$E+cprintf.off[bp],bx
+00236                                           !BCC_EOS
+00237 017F           E9         00A0            br 	.32
+00238                                           !BCC_EOS
+00239                       00000182>           .37:
+00240 0182           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00241 0185           43                         inc	bx
+00242 0186           43                         inc	bx
+00243 0187           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00244 018A           8B47         FE            mov	ax,-2[bx]
+00245 018D           99                         cwd
+00246 018E           89D3                       mov	bx,dx
+00247 0190           8946         F0            mov	-$10+cprintf.off[bp],ax
+00248 0193           895E         F2            mov	-$E+cprintf.off[bp],bx
+00249                                           !BCC_EOS
+00250 0196           E9         0089            br 	.32
+00251                                           !BCC_EOS
+00252                       00000199>           .39:
+00253 0199           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00254 019C           83C3                   04  add	bx,*4
+00255 019F           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00256 01A2           8B47         FC            mov	ax,-4[bx]
+00257 01A5           8B5F         FE            mov	bx,-2[bx]
+00258 01A8           8946         F0            mov	-$10+cprintf.off[bp],ax
+00259 01AB           895E         F2            mov	-$E+cprintf.off[bp],bx
+00260                                           !BCC_EOS
+00261 01AE           EB           72            jmp .32
+00262                                           !BCC_EOS
+00263                       000001B0>           .3A:
+00264 01B0           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00265 01B3           43                         inc	bx
+00266 01B4           43                         inc	bx
+00267 01B5           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00268 01B8           8B47         FE            mov	ax,-2[bx]
+00269 01BB           31DB                       xor	bx,bx
+00270 01BD           8946         F0            mov	-$10+cprintf.off[bp],ax
+00271 01C0           895E         F2            mov	-$E+cprintf.off[bp],bx
+00272                                           !BCC_EOS
+00273 01C3           EB           5D            jmp .32
+00274                                           !BCC_EOS
+00275                       000001C5>           .3B:
+00276 01C5           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00277 01C8           43                         inc	bx
+00278 01C9           43                         inc	bx
+00279 01CA           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00280 01CD           8B47         FE            mov	ax,-2[bx]
+00281 01D0           31DB                       xor	bx,bx
+00282 01D2           8946         F0            mov	-$10+cprintf.off[bp],ax
+00283 01D5           895E         F2            mov	-$E+cprintf.off[bp],bx
+00284                                           !BCC_EOS
+00285 01D8           EB           48            jmp .32
+00286                                           !BCC_EOS
+00287                       000001DA>           .3C:
+00288 01DA           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00289 01DD           83C3                   04  add	bx,*4
+00290 01E0           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00291 01E3           8B47         FC            mov	ax,-4[bx]
+00292 01E6           8B5F         FE            mov	bx,-2[bx]
+00293 01E9           8946         F0            mov	-$10+cprintf.off[bp],ax
+00294 01EC           895E         F2            mov	-$E+cprintf.off[bp],bx
+00295                                           !BCC_EOS
+00296 01EF           EB           31            jmp .32
+00297                                           !BCC_EOS
+00298                       000001F1>           .3D:
+00299 01F1           31C0                       xor	ax,ax
+00300 01F3           31DB                       xor	bx,bx
+00301 01F5           8946         F0            mov	-$10+cprintf.off[bp],ax
+00302 01F8           895E         F2            mov	-$E+cprintf.off[bp],bx
+00303                                           !BCC_EOS
+00304 01FB           EB           25            jmp .32
+00305                                           !BCC_EOS
+00306 01FD           EB           23            jmp .32
+00307                       000001FF>           .34:
+00308 01FF           2D                   0000  sub	ax,*0
+00309 0202           7C           ED            jl 	.3D
+00310 0204           3D                   0006  cmp	ax,*6
+00311 0207           77           17            ja  	.3E
+00312 0209           D1E0                       shl	ax,*1
+00313 020B           89C3                       mov	bx,ax
+00314 020D           2E                         seg	cs
+00315 020E           FFA7       0212>           br	.3F[bx]
+00316                       00000212>           .3F:
+00317 0212                      016B>           .word	.35
+00318 0214                      0182>           .word	.37
+00319 0216                      0199>           .word	.39
+00320 0218                      01F1>           .word	.3D
+00321 021A                      01B0>           .word	.3A
+00322 021C                      01C5>           .word	.3B
+00323 021E                      01DA>           .word	.3C
+00324                       00000220>           .3E:
+00325 0220           EB           CF            jmp	.3D
+00326                       00000222>           .32:
+00327 0222           FF76         F4            push	-$C+cprintf.off[bp]
+00328 0225           FF76         F2            push	-$E+cprintf.off[bp]
+00329 0228           FF76         F0            push	-$10+cprintf.off[bp]
+00330 022B           E8         011C            call	___numout
+00331 022E           83C4                   06  add	sp,*6
+00332 0231           8946         EE            mov	-$12+cprintf.off[bp],ax
+00333                                           !BCC_EOS
+00334 0234           EB           0E            jmp .40
+00335                       00000236>           .41:
+00336                       00000236>           .42:
+00337 0236           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00338 0239           43                         inc	bx
+00339 023A           43                         inc	bx
+00340 023B           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00341 023E           8B5F         FE            mov	bx,-2[bx]
+00342 0241           895E         EE            mov	-$12+cprintf.off[bp],bx
+00343                                           !BCC_EOS
+00344                       00000244>           .40:
+00345 0244           FF4E         F8            dec	word ptr -8+cprintf.off[bp]
+00346                                           !BCC_EOS
+00347 0247           FF76         EE            push	-$12+cprintf.off[bp]
+00348 024A           E8         0000>           call	_strlen
+00349 024D           44                         inc	sp
+00350 024E           44                         inc	sp
+00351 024F           8946         FA            mov	-6+cprintf.off[bp],ax
+00352                                           !BCC_EOS
+00353 0252           8B46         E8            mov	ax,-$18+cprintf.off[bp]
+00354 0255           85C0                       test	ax,ax
+00355 0257           75           06            jne 	.43
+00356                       00000259>           .44:
+00357 0259           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00358 025C           8946         E8            mov	-$18+cprintf.off[bp],ax
+00359                                           !BCC_EOS
+00360                       0000025F>           .43:
+00361 025F           8B46         EA            mov	ax,-$16+cprintf.off[bp]
+00362 0262           85C0                       test	ax,ax
+00363 0264           7E           25            jle 	.45
+00364                       00000266>           .46:
+00365 0266           8B46         FA            mov	ax,-6+cprintf.off[bp]
+00366 0269           2946         EA            sub	-$16+cprintf.off[bp],ax
+00367                                           !BCC_EOS
+00368 026C           EB           11            jmp .48
+00369                       0000026E>           .49:
+00370 026E           8A46         ED            mov	al,-$13+cprintf.off[bp]
+00371 0271           30E4                       xor	ah,ah
+00372 0273           50                         push	ax
+00373 0274           E8         0000>           call	_bios_putc
+00374 0277           44                         inc	sp
+00375 0278           44                         inc	sp
+00376                                           !BCC_EOS
+00377 0279           FF46         F8            inc	word ptr -8+cprintf.off[bp]
+00378                                           !BCC_EOS
+00379 027C           FF4E         EA            dec	word ptr -$16+cprintf.off[bp]
+00380                                           !BCC_EOS
+00381                       0000027F>           .48:
+00382 027F           8B46         EA            mov	ax,-$16+cprintf.off[bp]
+00383 0282           85C0                       test	ax,ax
+00384 0284           7F           E8            jg 	.49
+00385                       00000286>           .4A:
+00386                       00000286>           .47:
+00387 0286           31C0                       xor	ax,ax
+00388 0288           8946         EA            mov	-$16+cprintf.off[bp],ax
+00389                                           !BCC_EOS
+00390                       0000028B>           .45:
+00391 028B           8B46         EA            mov	ax,-$16+cprintf.off[bp]
+00392 028E           85C0                       test	ax,ax
+00393 0290           7D           0B            jge 	.4B
+00394                       00000292>           .4C:
+00395 0292           31C0                       xor	ax,ax
+00396 0294           2B46         EA            sub	ax,-$16+cprintf.off[bp]
+00397 0297           2B46         FA            sub	ax,-6+cprintf.off[bp]
+00398 029A           8946         EA            mov	-$16+cprintf.off[bp],ax
+00399                                           !BCC_EOS
+00400                       0000029D>           .4B:
+00401 029D           EB           13            jmp .4E
+00402                       0000029F>           .4F:
+00403 029F           8B5E         EE            mov	bx,-$12+cprintf.off[bp]
+00404 02A2           FF46         EE            inc	word ptr -$12+cprintf.off[bp]
+00405 02A5           8A07                       mov	al,[bx]
+00406 02A7           30E4                       xor	ah,ah
+00407 02A9           50                         push	ax
+00408 02AA           E8         0000>           call	_bios_putc
+00409 02AD           44                         inc	sp
+00410 02AE           44                         inc	sp
+00411                                           !BCC_EOS
+00412 02AF           FF46         F8            inc	word ptr -8+cprintf.off[bp]
+00413                                           !BCC_EOS
+00414                       000002B2>           .4E:
+00415 02B2           8B5E         EE            mov	bx,-$12+cprintf.off[bp]
+00416 02B5           8A07                       mov	al,[bx]
+00417 02B7           84C0                       test	al,al
+00418 02B9           74           0A            je  	.50
+00419                       000002BB>           .51:
+00420 02BB           8B46         E8            mov	ax,-$18+cprintf.off[bp]
+00421 02BE           FF4E         E8            dec	word ptr -$18+cprintf.off[bp]
+00422 02C1           85C0                       test	ax,ax
+00423 02C3           7F           DA            jg 	.4F
+00424                       000002C5>           .50:
+00425                       000002C5>           .4D:
+00426 02C5           EB           0F            jmp .53
+00427                       000002C7>           .54:
+00428 02C7           B8                   0020  mov	ax,*$20
+00429 02CA           50                         push	ax
+00430 02CB           E8         0000>           call	_bios_putc
+00431 02CE           44                         inc	sp
+00432 02CF           44                         inc	sp
+00433                                           !BCC_EOS
+00434 02D0           FF46         F8            inc	word ptr -8+cprintf.off[bp]
+00435                                           !BCC_EOS
+00436 02D3           FF4E         EA            dec	word ptr -$16+cprintf.off[bp]
+00437                                           !BCC_EOS
+00438                       000002D6>           .53:
+00439 02D6           8B46         EA            mov	ax,-$16+cprintf.off[bp]
+00440 02D9           85C0                       test	ax,ax
+00441 02DB           7F           EA            jg 	.54
+00442                       000002DD>           .55:
+00443                       000002DD>           .52:
+00444 02DD           EB           4D            jmp .25
+00445                                           !BCC_EOS
+00446                       000002DF>           .56:
+00447 02DF           8B5E         E6            mov	bx,-$1A+cprintf.off[bp]
+00448 02E2           43                         inc	bx
+00449 02E3           43                         inc	bx
+00450 02E4           895E         E6            mov	-$1A+cprintf.off[bp],bx
+00451 02E7           FF77         FE            push	-2[bx]
+00452 02EA           E8         0000>           call	_bios_putc
+00453 02ED           44                         inc	sp
+00454 02EE           44                         inc	sp
+00455                                           !BCC_EOS
+00456 02EF           EB           3B            jmp .25
+00457                                           !BCC_EOS
+00458                       000002F1>           .57:
+00459 02F1           FF76         FA            push	-6+cprintf.off[bp]
+00460 02F4           E8         0000>           call	_bios_putc
+00461 02F7           44                         inc	sp
+00462 02F8           44                         inc	sp
+00463                                           !BCC_EOS
+00464 02F9           EB           31            jmp .25
+00465                                           !BCC_EOS
+00466 02FB           EB           2F            jmp .25
+00467                       000002FD>           .27:
+00468 02FD           2D                   0063  sub	ax,*$63
+00469 0300           74           DD            je 	.56
+00470 0302           2D                   0001  sub	ax,*1
+00471 0305   7503    E9         FE56            beq 	.31
+00472 030A           2D                   000B  sub	ax,*$B
+00473 030D   7503    E9         FE30            beq 	.2B
+00474 0312           2D                   0004  sub	ax,*4
+00475 0315   7503    E9         FF1C            beq 	.42
+00476 031A           2D                   0002  sub	ax,*2
+00477 031D   7503    E9         FE2F            beq 	.2E
+00478 0322           2D                   0003  sub	ax,*3
+00479 0325   7503    E9         FE09            beq 	.28
+00480 032A           EB           C5            jmp	.57
+00481                       0000032C>           .25:
+00482                       FFFFFFE4            ..FFFF	=	-$1C
+00483                       0000032C>           .8:
+00484                       0000032C>           .2:
+00485 032C           8B5E         04            mov	bx,4[bp]
+00486 032F           FF46         04            inc	word ptr 4[bp]
+00487 0332           8A07                       mov	al,[bx]
+00488 0334           30E4                       xor	ah,ah
+00489 0336           8946         FA            mov	-6+cprintf.off[bp],ax
+00490 0339           85C0                       test	ax,ax
+00491 033B   7403    E9         FCE0            bne 	.3
+00492                       00000340>           .58:
+00493                       00000340>           .1:
+00494                                           !BCC_EOS
+00495 0340           8B46         F8            mov	ax,-8+cprintf.off[bp]
+00496 0343           83C4                   16  add	sp,*$16
+00497                                           if cprintf.off=0
+00498 0346           5E                         pop	si
+00499 0347           5F                         pop	di
+00500                                           endif
+00501 0348           5D                         pop	bp
+00502 0349           C3                         ret
+00503                                           !BCC_EOS
+00504                                           ! Register BX used in function cprintf
+00505                       00000000            cprintf.off = 0
+00506 0000                                      .data
+00507                       00000000>           _nstring:
+00508                       00000000>           .59:
+00509 0000                        30            .ascii	"0123456789ABCDEF"
+00510 0010                        00            .byte	0
+00511                                           !BCC_EOS
+00512                                           !BCC_ASM
+00513                                           ! numout.s
+00514                                           !
+00515 0011                                      .bss
+00516                       0000000C>           ___out	lcomm	$C
+00517 034A                                      .text
+00518                       0000034A>           ___numout:
+00519 034A           55                         push	bp
+00520 034B           89E5                       mov	bp,sp
+00521 034D           57                         push	di
+00522 034E           56                         push	si
+00523 034F           83C4                   FC  add	sp,*-4
+00524 0352           C646         F8        00  mov	byte ptr -8[bp],*$0	! flg = 0
+00525 0356           8B76         04            mov	si,4[bp]	; i or val.lo
+00526 0359           8B7E         06            mov	di,6[bp]	; i or val.hi
+00527 035C           8B4E         08            mov	cx,8[bp]	; base
+00528 035F           85C9                       test	cx,cx			! base < 0 ?
+00529 0361           7D           11            jge 	.3num
+00530 0363           F7D9                       neg  cx				! base = -base
+00531 0365           09FF                       or	di,di			! i < 0 ?
+00532 0367           79           0B            jns	.5num
+00533 0369           C646         F8        01  mov	byte ptr -8[bp],*1	! flg = 1
+00534 036D           F7DF                       neg	di			! i = -i
+00535 036F           F7DE                       neg	si
+00536 0371           83DF                   00  sbb	di,*0
+00537                       00000374>           .5num:
+00538                       00000374>           .3num:
+00539 0374           C606       000B>       00  mov	byte ptr [___out+$B],*$0	! out[11] = nul
+00540 0379           C746         FA      000A  mov	-6[bp],*$A		! n = 10
+00541                       0000037E>           .9num:
+00542                                           !!!         out[n--] = nstring[val % base];
+00543 037E           31D2                       xor  dx,dx
+00544 0380           97                         xchg ax,di
+00545 0381           F7F1                       div  cx
+00546 0383           97                         xchg ax,di
+00547 0384           96                         xchg ax,si
+00548 0385           F7F1                       div  cx
+00549 0387           96                         xchg ax,si			! val(new)= val / base
+00550 0388           89D3                       mov  bx,dx			! dx = val % base
+00551 038A           8A87       0000>           mov	al,_nstring[bx]
+00552 038E           8B5E         FA            mov	bx,-6[bp]
+00553 0391           FF4E         FA            dec	word ptr -6[bp]
+00554 0394           8887       0000>           mov	___out[bx],al
+00555 0398           89F0                       mov  ax,si
+00556 039A           09F8                       or   ax,di			! while (val)
+00557 039C           75           E0            jne	.9num
+00558 039E           807E         F8        00  cmp	byte ptr -8[bp],*$0	! flg == 0 ?
+00559 03A2           74           0B            je  	.Dnum
+00560 03A4           8B5E         FA            mov	bx,-6[bp]
+00561 03A7           FF4E         FA            dec	word ptr -6[bp]
+00562 03AA           C687       0000>       2D  mov	byte ptr ___out[bx],*$2D	! out[n--] = minus
+00563                       000003AF>           .Dnum:
+00564 03AF           8B46         FA            mov	ax,-6[bp]
+00565 03B2           05                   0001> add	ax,#___out+1
+00566 03B5           83C4                   04  add	sp,*4
+00567 03B8           5E                         pop	si
+00568 03B9           5F                         pop	di
+00569 03BA           5D                         pop	bp
+00570 03BB           C3                         ret
+00571                                           !BCC_ENDASM
+00572 0011                                      .bss
+00573                                           ! 0 errors detected
+
+Symbols:
+..FFFF                      0 FFE4 A   .1                          0 0340 R   
+.10                         0 0073 R   .11                         0 00D7 R   
+.12                         0 009F R   .13                         0 00D7 R   
+.14                         0 00D5 R   .15                         0 009F R   
+.16                         0 00B9 R   .17                         0 00B7 R   
+.18                         0 00B1 R   .19                         0 00E7 R   
+.1A                         0 00DD R   .1B                         0 00F1 R   
+.1C                         0 00F1 R   .1D                         0 00ED R   
+.1E                         0 00FB R   .1F                         0 00F8 R   
+.2                          0 032C R   .20                         0 0115 R   
+.21                         0 0101 R   .22                         0 012D R   
+.23                         0 012D R   .24                         0 011B R   
+.25                         0 032C R   .27                         0 02FD R   
+.28                         0 0133 R   .29                         0 014F R   
+.2A                         0 0142 R   .2B                         0 0142 R   
+.2C                         0 015E R   .2D                         0 0151 R   
+.2E                         0 0151 R   .2F                         0 0165 R   
+.3                          0 0020 R   .30                         0 0160 R   
+.31                         0 0160 R   .32                         0 0222 R   
+.34                         0 01FF R   .35                         0 016B R   
+.37                         0 0182 R   .39                         0 0199 R   
+.3A                         0 01B0 R   .3B                         0 01C5 R   
+.3C                         0 01DA R   .3D                         0 01F1 R   
+.3E                         0 0220 R   .3F                         0 0212 R   
+.3num                       0 0374 R   .4                          0 0043 R   
+.40                         0 0244 R   .41                         0 0236 R   
+.42                         0 0236 R   .43                         0 025F R   
+.44                         0 0259 R   .45                         0 028B R   
+.46                         0 0266 R   .47                         0 0286 R   
+.48                         0 027F R   .49                         0 026E R   
+.4A                         0 0286 R   .4B                         0 029D R   
+.4C                         0 0292 R   .4D                         0 02C5 R   
+.4E                         0 02B2 R   .4F                         0 029F R   
+.5                          0 0029 R   .50                         0 02C5 R   
+.51                         0 02BB R   .52                         0 02DD R   
+.53                         0 02D6 R   .54                         0 02C7 R   
+.55                         0 02DD R   .56                         0 02DF R   
+.57                         0 02F1 R   .58                         0 0340 R   
+.59                         3 0000 R   .5num                       0 0374 R   
+.6                          0 0038 R   .7                          0 002F R   
+.8                          0 032C R   .9                          0 0061 R   
+.9num                       0 037E R   .A                          0 005E R   
+.B                          0 0099 R   .C                          0 0097 R   
+.D                          0 0061 R   .Dnum                       0 03AF R   
+.E                          0 007B R   .F                          0 0079 R   
+___numout                   0 034A R   ___out                      3 000C R C 
+_bios_putc                  F 0000 R I _cprintf                    0 0000 R E 
+_nstring                    3 0000 R   _strlen                     F 0000 R I 
+cprintf.off                 0 0000 A   
+
+00000 errors
+00000 warnings

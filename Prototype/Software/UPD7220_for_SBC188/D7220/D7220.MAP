@@ -1,0 +1,417 @@
+
+ Start  Stop   Length Name                   Class
+ 00000H 02469H 0246AH _TEXT                  CODE
+ 02470H 02471H 00002H EMULATOR_TEXT          CODE
+ 02472H 02472H 00000H C_ETEXT                ENDCODE
+ 02480H 02480H 00000H EMULATOR_DATA          FAR_DATA
+ 02480H 024C1H 00042H NULL                   BEGDATA
+ 024C2H 0283DH 0037CH _DATA                  DATA
+ 0283EH 0283FH 00002H XIQC                   DATA
+ 02840H 0284BH 0000CH DBDATA                 DATA
+ 0284CH 02859H 0000EH CDATA                  DATA
+ 0285AH 0285AH 00000H XIFB                   DATA
+ 0285AH 0285AH 00000H XIF                    DATA
+ 0285AH 0285AH 00000H XIFE                   DATA
+ 0285AH 0285AH 00000H XIB                    DATA
+ 0285AH 0285AH 00000H XI                     DATA
+ 0285AH 0285AH 00000H XIE                    DATA
+ 0285AH 0285AH 00000H XPB                    DATA
+ 0285AH 0285BH 00002H XP                     DATA
+ 0285CH 0285CH 00000H XPE                    DATA
+ 0285CH 0285CH 00000H XCB                    DATA
+ 0285CH 0285CH 00000H XC                     DATA
+ 0285CH 0285CH 00000H XCE                    DATA
+ 0285CH 0285CH 00000H XCFB                   DATA
+ 0285CH 0285CH 00000H XCFCRT                 DATA
+ 0285CH 0285CH 00000H XCF                    DATA
+ 0285CH 0285CH 00000H XCFE                   DATA
+ 0285CH 0285CH 00000H XIFCB                  DATA
+ 0285CH 0285CH 00000H XIFU                   DATA
+ 0285CH 0285CH 00000H XIFL                   DATA
+ 0285CH 0285CH 00000H XIFM                   DATA
+ 0285CH 0285CH 00000H XIFCE                  DATA
+ 0285CH 0285CH 00000H CONST                  CONST
+ 0285CH 02863H 00008H HDR                    MSG
+ 02864H 02939H 000D6H MSG                    MSG
+ 0293AH 0293BH 00002H PAD                    MSG
+ 0293CH 0293CH 00001H EPAD                   MSG
+ 0293EH 0293EH 00000H _BSS                   BSS
+ 0293EH 0293EH 00000H XOB                    BSS
+ 0293EH 0293EH 00000H XO                     BSS
+ 0293EH 0293EH 00000H XOE                    BSS
+ 0293EH 0293EH 00000H XOFB                   BSS
+ 0293EH 0293EH 00000H XOF                    BSS
+ 0293EH 0293EH 00000H XOFE                   BSS
+ 02940H 0295EH 0001FH c_common               BSS
+ 02960H 0315FH 00800H STACK                  STACK
+
+ Origin   Group
+ 0248:0   DGROUP
+
+  Address         Publics by Name
+
+ 0248:04C6       _area
+ 0000:1292       _atoi
+ 0248:04DE       _color_Color
+ 0000:09DA       _color_fill
+ 0000:0AB0       _color_fill2
+ 0000:0952       _color_line
+ 0000:0936       _color_mode
+ 0248:04C0       _color_Modus
+ 0000:091A       _color_setup
+ 0248:04CC       _currX
+ 0248:04CE       _currY
+ 0248:04C1       _dbglvl
+ 0248:04BE       _edata
+ 0248:04E0       _end
+ 0248:01A0       _errno
+ 0000:1174       _exit
+ 0000:21B6       _fclose
+ 0000:1C54       _fflush
+ 0000:0864       _gchar_test
+ 0000:025C       _gdc_cchar
+ 0000:0208       _gdc_display
+ 0000:0490       _gdc_done
+ 0000:04AC       _gdc_Dparam
+ 0000:0730       _gdc_fill
+ 0000:07E0       _gdc_fill2
+ 0000:04D0       _gdc_hline
+ 0000:03E6       _gdc_init
+ 0000:062C       _gdc_line
+ 0000:03A0       _gdc_mask
+ 0000:03C0       _gdc_mode
+ 0000:02C2       _gdc_pattern
+ 0000:027A       _gdc_pitch
+ 0000:0292       _gdc_pram
+ 0000:011E       _gdc_putc
+ 0000:0140       _gdc_putp
+ 0000:0234       _gdc_reset
+ 0000:032E       _gdc_setcursor
+ 0000:0394       _gdc_start
+ 0000:021C       _gdc_sync
+ 0000:0162       _gdc_sync_params
+ 0000:0248       _gdc_vsync
+ 0000:02D8       _gdc_zoom_display
+ 0000:0304       _gdc_zoom_draw
+ 0248:04C4       _HBP
+ 0248:04CA       _HFP
+ 0248:04C5       _HS
+ 0000:0B20       _main
+ 0248:04CB       _Mode
+ 0248:0042       _plane_address
+ 0000:1256       _printf
+ 0000:00C0       _ramdac_init
+ 0000:0010       _ramdac_overlay
+ 0000:002A       _ramdac_set_overlay_color
+ 0000:006A       _ramdac_set_palette_color
+ 0000:00AA       _ramdac_set_read_mask
+ 0000:23E0       _remove
+ 0248:04DA       _start_address
+ 0248:01DA       _STKHQQ
+ 0000:2352       _strcat
+ 0000:2392       _strcpy
+ 0248:04D4       _Xmax
+ 0248:04D6       _Ymax
+ 0248:04D0       _Ypitch
+ 0248:04C2       _Ypitch_wds
+ 0248:04D2       _Zoom_Display
+ 0248:04D8       _Zoom_Draw
+ 0248:01D8       __aaltstkovr
+ 0248:0184       __acfinfo
+ 0000:9876  Abs  __acrtmsg
+ 0000:9876  Abs  __acrtused
+ 0000:D6D6  Abs  __aDBdoswp
+ 0248:01DC       __adbgmsg
+ 0248:0166       __aexit_rtn
+ 0248:0192       __aintdiv
+ 0248:03A2       __amblksiz
+ 0000:1077       __amsg_exit
+ 0000:123E       __aNchkstk
+ 0000:1296       __aNlshr
+ 0248:0042       __anullsize
+ 0248:017E       __aseghi
+ 0248:0180       __aseglo
+ 0248:0168       __asizds
+ 0248:039E       __asizeC
+ 0248:039F       __asizeD
+ 0000:0FAC       __astart
+ 0248:0164       __atopsp
+ 0000:1AEA       __catox
+ 0000:1183       __cexit
+ 0248:038C       __cfltcvt_tab
+ 0248:038A       __cflush
+ 0248:01CF       __child
+ 0000:123E       __chkstk
+ 0000:10A2       __cinit
+ 0000:1068       __cintDIV
+ 0000:2332       __close
+ 0000:23EE       __cltoasub
+ 0000:2106       __commit
+ 0248:01AB       __cpumode
+ 0000:1202       __ctermsub
+ 0000:23FA       __cxtoa
+ 0000:118D       __c_exit
+ 0000:10A0       __dataseg
+ 0248:01AC       __doserrno
+ 0000:2160       __dosret0
+ 0000:2175       __dosretax
+ 0000:2168       __dosreturn
+ 0248:01A8       __dosvermajor
+ 0248:01A9       __dosverminor
+ 0000:22FA       __dos_commit
+ 0248:04BE       __edata
+ 0247:0000       __EmDataSeg
+ 0248:04E0       __end
+ 0000:1B62       __endstdio
+ 0248:01C8       __environ
+ 0000:117B       __exit
+ 0248:01D7       __exitflag
+ 0248:0196       __fac
+ 0000:1552       __farstub
+ 0000:20E2       __fcloseall
+ 0248:0182       __fDosExt
+ 0000:12A2       __FF_MSGBANNER
+ 0000:20C1       __findlast
+ 0000:1B74       __flsbuf
+ 0000:1CA2       __flush
+ 0000:1D18       __flushall
+ 0248:03CE       __fpinit
+ 0000:12C2       __fptrap
+ 0000:2308       __freebuf
+ 0000:15C5       __ftbuf
+ 0000:1D86       __getbuf
+ 0000:1FE4       __growseg
+ 0000:2070       __incseg
+ 0000:244E       __inp
+ 0248:01D2       __intno
+ 0248:01E0       __iob
+ 0248:0280       __iob2
+ 0000:23C4       __itoa
+ 0248:0320       __lastiob
+ 0000:1DC8       __lseek
+ 0248:03BC       __lseekchk
+ 0000:2182       __maperror
+ 0000:1B3E       __myalloc
+ 0248:01AE       __nfile
+ 0000:1F88       __nfree
+ 0248:016A       __nheap_desc
+ 0000:1FA9       __nmalloc
+ 0000:14F2       __NMSG_TEXT
+ 0000:151D       __NMSG_WRITE
+ 0000:12C8       __nullcheck
+ 0248:01AC       __oserr
+ 0248:01B0       __osfile
+ 0248:01A8       __osmajor
+ 0248:01A9       __osminor
+ 0248:01AA       __osmode
+ 0248:01A8       __osversion
+ 0000:245C       __outp
+ 0000:1614       __output
+ 0248:01D1       __ovlflag
+ 0248:01D3       __ovlvec
+ 0248:01CA       __pgmptr
+ 0248:03A0       __pnhNearHeap
+ 0248:01A6       __psp
+ 0248:01A4       __pspadr
+ 0000:227E       __searchseg
+ 0000:12EA       __setargv
+ 0000:1474       __setenvp
+ 0248:039C       __sigintoff
+ 0248:039A       __sigintseg
+ 0000:226C       __stackavail
+ 0000:1554       __stbuf
+ 0248:01A2       __umaskval
+ 0000:23E0       __unlink
+ 0000:1E4A       __write
+ 0248:03C6       ___aDBexit
+ 0248:03C4       ___aDBrterr
+ 0248:03C2       ___aDBswpchk
+ 0248:03C0       ___aDBswpflg
+ 0248:01C4       ___argc
+ 0248:01C6       ___argv
+ 0248:03BE       ___qczrinit
+
+  Address         Publics by Value
+
+ 0000:0010       _ramdac_overlay
+ 0000:002A       _ramdac_set_overlay_color
+ 0000:006A       _ramdac_set_palette_color
+ 0000:00AA       _ramdac_set_read_mask
+ 0000:00C0       _ramdac_init
+ 0000:011E       _gdc_putc
+ 0000:0140       _gdc_putp
+ 0000:0162       _gdc_sync_params
+ 0000:0208       _gdc_display
+ 0000:021C       _gdc_sync
+ 0000:0234       _gdc_reset
+ 0000:0248       _gdc_vsync
+ 0000:025C       _gdc_cchar
+ 0000:027A       _gdc_pitch
+ 0000:0292       _gdc_pram
+ 0000:02C2       _gdc_pattern
+ 0000:02D8       _gdc_zoom_display
+ 0000:0304       _gdc_zoom_draw
+ 0000:032E       _gdc_setcursor
+ 0000:0394       _gdc_start
+ 0000:03A0       _gdc_mask
+ 0000:03C0       _gdc_mode
+ 0000:03E6       _gdc_init
+ 0000:0490       _gdc_done
+ 0000:04AC       _gdc_Dparam
+ 0000:04D0       _gdc_hline
+ 0000:062C       _gdc_line
+ 0000:0730       _gdc_fill
+ 0000:07E0       _gdc_fill2
+ 0000:0864       _gchar_test
+ 0000:091A       _color_setup
+ 0000:0936       _color_mode
+ 0000:0952       _color_line
+ 0000:09DA       _color_fill
+ 0000:0AB0       _color_fill2
+ 0000:0B20       _main
+ 0000:0FAC       __astart
+ 0000:1068       __cintDIV
+ 0000:1077       __amsg_exit
+ 0000:10A0       __dataseg
+ 0000:10A2       __cinit
+ 0000:1174       _exit
+ 0000:117B       __exit
+ 0000:1183       __cexit
+ 0000:118D       __c_exit
+ 0000:1202       __ctermsub
+ 0000:123E       __aNchkstk
+ 0000:123E       __chkstk
+ 0000:1256       _printf
+ 0000:1292       _atoi
+ 0000:1296       __aNlshr
+ 0000:12A2       __FF_MSGBANNER
+ 0000:12C2       __fptrap
+ 0000:12C8       __nullcheck
+ 0000:12EA       __setargv
+ 0000:1474       __setenvp
+ 0000:14F2       __NMSG_TEXT
+ 0000:151D       __NMSG_WRITE
+ 0000:1552       __farstub
+ 0000:1554       __stbuf
+ 0000:15C5       __ftbuf
+ 0000:1614       __output
+ 0000:1AEA       __catox
+ 0000:1B3E       __myalloc
+ 0000:1B62       __endstdio
+ 0000:1B74       __flsbuf
+ 0000:1C54       _fflush
+ 0000:1CA2       __flush
+ 0000:1D18       __flushall
+ 0000:1D86       __getbuf
+ 0000:1DC8       __lseek
+ 0000:1E4A       __write
+ 0000:1F88       __nfree
+ 0000:1FA9       __nmalloc
+ 0000:1FE4       __growseg
+ 0000:2070       __incseg
+ 0000:20C1       __findlast
+ 0000:20E2       __fcloseall
+ 0000:2106       __commit
+ 0000:2160       __dosret0
+ 0000:2168       __dosreturn
+ 0000:2175       __dosretax
+ 0000:2182       __maperror
+ 0000:21B6       _fclose
+ 0000:226C       __stackavail
+ 0000:227E       __searchseg
+ 0000:22FA       __dos_commit
+ 0000:2308       __freebuf
+ 0000:2332       __close
+ 0000:2352       _strcat
+ 0000:2392       _strcpy
+ 0000:23C4       __itoa
+ 0000:23E0       __unlink
+ 0000:23E0       _remove
+ 0000:23EE       __cltoasub
+ 0000:23FA       __cxtoa
+ 0000:244E       __inp
+ 0000:245C       __outp
+ 0247:0000       __EmDataSeg
+ 0248:0042       __anullsize
+ 0248:0042       _plane_address
+ 0248:0164       __atopsp
+ 0248:0166       __aexit_rtn
+ 0248:0168       __asizds
+ 0248:016A       __nheap_desc
+ 0248:017E       __aseghi
+ 0248:0180       __aseglo
+ 0248:0182       __fDosExt
+ 0248:0184       __acfinfo
+ 0248:0192       __aintdiv
+ 0248:0196       __fac
+ 0248:01A0       _errno
+ 0248:01A2       __umaskval
+ 0248:01A4       __pspadr
+ 0248:01A6       __psp
+ 0248:01A8       __dosvermajor
+ 0248:01A8       __osversion
+ 0248:01A8       __osmajor
+ 0248:01A9       __osminor
+ 0248:01A9       __dosverminor
+ 0248:01AA       __osmode
+ 0248:01AB       __cpumode
+ 0248:01AC       __oserr
+ 0248:01AC       __doserrno
+ 0248:01AE       __nfile
+ 0248:01B0       __osfile
+ 0248:01C4       ___argc
+ 0248:01C6       ___argv
+ 0248:01C8       __environ
+ 0248:01CA       __pgmptr
+ 0248:01CF       __child
+ 0248:01D1       __ovlflag
+ 0248:01D2       __intno
+ 0248:01D3       __ovlvec
+ 0248:01D7       __exitflag
+ 0248:01D8       __aaltstkovr
+ 0248:01DA       _STKHQQ
+ 0248:01DC       __adbgmsg
+ 0248:01E0       __iob
+ 0248:0280       __iob2
+ 0248:0320       __lastiob
+ 0248:038A       __cflush
+ 0248:038C       __cfltcvt_tab
+ 0248:039A       __sigintseg
+ 0248:039C       __sigintoff
+ 0248:039E       __asizeC
+ 0248:039F       __asizeD
+ 0248:03A0       __pnhNearHeap
+ 0248:03A2       __amblksiz
+ 0248:03BC       __lseekchk
+ 0248:03BE       ___qczrinit
+ 0248:03C0       ___aDBswpflg
+ 0248:03C2       ___aDBswpchk
+ 0248:03C4       ___aDBrterr
+ 0248:03C6       ___aDBexit
+ 0248:03CE       __fpinit
+ 0248:04BE       __edata
+ 0248:04BE       _edata
+ 0248:04C0       _color_Modus
+ 0248:04C1       _dbglvl
+ 0248:04C2       _Ypitch_wds
+ 0248:04C4       _HBP
+ 0248:04C5       _HS
+ 0248:04C6       _area
+ 0248:04CA       _HFP
+ 0248:04CB       _Mode
+ 0248:04CC       _currX
+ 0248:04CE       _currY
+ 0248:04D0       _Ypitch
+ 0248:04D2       _Zoom_Display
+ 0248:04D4       _Xmax
+ 0248:04D6       _Ymax
+ 0248:04D8       _Zoom_Draw
+ 0248:04DA       _start_address
+ 0248:04DE       _color_Color
+ 0248:04E0       _end
+ 0248:04E0       __end
+ 0000:9876  Abs  __acrtmsg
+ 0000:9876  Abs  __acrtused
+ 0000:D6D6  Abs  __aDBdoswp
+
+Program entry point at 0000:0FAC
