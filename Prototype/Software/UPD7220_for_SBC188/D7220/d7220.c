@@ -633,7 +633,8 @@ void main(int argc, char* argv[])
     int x1, x2, y;
     start_address = 0;	/* start of graphic area in display memory */
     dbglvl = DEBUG;
-    Xmax = 800;
+//    Xmax = 800;  // only with 40 MHz pix-clock
+    Xmax = 640;  // only with 25.175 MHz pix-clock
 //    Ypitch = 1024;	/* try this for size */
     Ypitch = 832;	/* must fit in 32K x 16 */
 
