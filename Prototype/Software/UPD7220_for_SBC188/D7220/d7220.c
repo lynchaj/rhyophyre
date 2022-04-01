@@ -154,6 +154,28 @@ void gdc_putp(byte parameter)
     outp(gdc_param, parameter);
 }
 
+// Dan is using these parameters in t7220.asm:
+// SYNCP:  .DB             012H,026H,044H,004H,002H,00AH,0E0H,085H
+//
+// Summary:
+// AW:40, AL: 480
+// HFP: 2, HS: 5, HBP: 3 
+// VFP: 10, VS: 2, VBP: 33
+//
+// Mode = P1 = 0x12
+// AW-2 = P2 = 0x26 = 38 => AW = 40 words per line => 640 pixels per line
+// HS-1 = P3 (0x44) & 0x1F = 4 => HS = 5 words
+// VSL  = (P3(0x44) & 0xE0) >> 5 = 2
+// VSH  = P4(0x04) & 0x3 = 0
+// so VS = 2 lines
+// HFP-1 = (P4(0x04) & 0xFC) >> 2 = 1 => HFP = 2 words
+// HBP-1 = P5(0x02) & 0x3F = 2 => HBP = 3 words
+// VFP   = P6(0x0A) & 0x3F = 10 lines
+// ALL   = P7(0xE0) = 0xE0 = 224
+// ALH   = (P8(0x85) & 0x3) = 1
+// so AL = 1 * 256 + 224 = 480
+// VBP   = (P8(0x85) & 0xFC) >> 2 = 0x21 = 33 lines
+
 
 void gdc_sync_params(void)
 {
@@ -175,10 +197,12 @@ void gdc_sync_params(void)
     sync.mode = Graphics;	/* mode = 0x12 */
     sync.AW = Xmax/16 - 2;
     sync.HS = HS - 1;
-    VFP = 7;         // was 10
+    VFP = 10;         // was 7
     VS = 2;
 //    VBP = 524 - Ymax - VFP - VS;
-    VBP = 32 - VFP - VS;     // was 44
+    VBP = 33;
+    //VBP = 32 - VFP - VS;     // was 44
+
     sync.VSL = VS & 7;
     sync.VSH = VS >> 3;
     sync.HFP = HFP - 1;
@@ -298,7 +322,7 @@ void gdc_init(byte enable)
     gdc_reset();
     gdc_sync(enable);
     gdc_vsync(1);
-/*    gdc_cchar(); */
+    gdc_cchar();
     Ypitch_wds = Ypitch/16;
     gdc_pitch(Ypitch_wds);
 
@@ -627,7 +651,6 @@ void color_fill2(int x1, int y1, int x2, int y2, byte color)
     for (; y1<=y2; y1++) color_line(x1, y1, x2, y1);
 }
 
-
 void main(int argc, char* argv[])
 {
     int x1, x2, y;
@@ -636,12 +659,11 @@ void main(int argc, char* argv[])
 //    Xmax = 800;  // only with 40 MHz pix-clock
     Xmax = 640;  // only with 25.175 MHz pix-clock
 //    Ypitch = 1024;	/* try this for size */
-    Ypitch = 832;	/* must fit in 32K x 16 */
+    Ypitch = 640;       /* must fit in 32K x 16 */
 
-    HFP = 2;
-    HS  = 6;
-    HBP = 8;	/* or 4 */
-    
+    HFP = 2;  // Horizontal front porch
+    HS  = 5;  // Horizontal Sync
+    HBP = 3;    /* or 4 */ /* Horizontal back porch */
     printf("\nStart test of uPD7220\n");
     if (argc==2 || argc==5) {
         Xmax = atoi(argv[--argc]);
