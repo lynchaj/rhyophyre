@@ -1,0 +1,148 @@
+                              1 ;--------------------------------------------------------
+                              2 ; File Created by SDCC : free open source ANSI-C Compiler
+                              3 ; Version 4.0.0 #11528 (Linux)
+                              4 ;--------------------------------------------------------
+                              5 	.module echo
+                              6 	.optsdcc -mz80
+                              7 	
+                              8 ;--------------------------------------------------------
+                              9 ; Public variables in this module
+                             10 ;--------------------------------------------------------
+                             11 	.globl _echotest
+                             12 	.globl _Qstatus
+                             13 	.globl _Ygetchar
+                             14 	.globl _Yputchar
+                             15 	.globl _cprintf
+                             16 ;--------------------------------------------------------
+                             17 ; special function registers
+                             18 ;--------------------------------------------------------
+                             19 ;--------------------------------------------------------
+                             20 ; ram data
+                             21 ;--------------------------------------------------------
+                             22 	.area _DATA
+                             23 ;--------------------------------------------------------
+                             24 ; ram data
+                             25 ;--------------------------------------------------------
+                             26 	.area _INITIALIZED
+                             27 ;--------------------------------------------------------
+                             28 ; absolute external ram data
+                             29 ;--------------------------------------------------------
+                             30 	.area _DABS (ABS)
+                             31 ;--------------------------------------------------------
+                             32 ; global & static initialisations
+                             33 ;--------------------------------------------------------
+                             34 	.area _HOME
+                             35 	.area _GSINIT
+                             36 	.area _GSFINAL
+                             37 	.area _GSINIT
+                             38 ;--------------------------------------------------------
+                             39 ; Home
+                             40 ;--------------------------------------------------------
+                             41 	.area _HOME
+                             42 	.area _HOME
+                             43 ;--------------------------------------------------------
+                             44 ; code
+                             45 ;--------------------------------------------------------
+                             46 	.area _CODE
+                             47 ;echo.c:13: int echotest(void)
+                             48 ;	---------------------------------
+                             49 ; Function echotest
+                             50 ; ---------------------------------
+   0000                      51 _echotest::
+   0000 DD E5         [15]   52 	push	ix
+   0002 DD 21 00 00   [14]   53 	ld	ix,#0
+   0006 DD 39         [15]   54 	add	ix,sp
+   0008 F5            [11]   55 	push	af
+   0009 F5            [11]   56 	push	af
+                             57 ;echo.c:20: "  Characters echoed as typed; end test with <ESC>\n");
+   000A 21r80r00      [10]   58 	ld	hl, #___str_0
+   000D E5            [11]   59 	push	hl
+   000E CDr00r00      [17]   60 	call	_cprintf
+   0011 F1            [10]   61 	pop	af
+                             62 ;echo.c:22: i = START;
+   0012 AF            [ 4]   63 	xor	a, a
+   0013 DD 77 FC      [19]   64 	ld	-4 (ix), a
+   0016 DD 77 FD      [19]   65 	ld	-3 (ix), a
+   0019 DD 36 FE 08   [19]   66 	ld	-2 (ix), #0x08
+   001D AF            [ 4]   67 	xor	a, a
+   001E DD 77 FF      [19]   68 	ld	-1 (ix), a
+                             69 ;echo.c:23: while (--i) {
+   0021                      70 00105$:
+   0021 DD 7E FC      [19]   71 	ld	a, -4 (ix)
+   0024 C6 FF         [ 7]   72 	add	a, #0xff
+   0026 4F            [ 4]   73 	ld	c, a
+   0027 DD 7E FD      [19]   74 	ld	a, -3 (ix)
+   002A CE FF         [ 7]   75 	adc	a, #0xff
+   002C 47            [ 4]   76 	ld	b, a
+   002D DD 7E FE      [19]   77 	ld	a, -2 (ix)
+   0030 CE FF         [ 7]   78 	adc	a, #0xff
+   0032 5F            [ 4]   79 	ld	e, a
+   0033 DD 7E FF      [19]   80 	ld	a, -1 (ix)
+   0036 CE FF         [ 7]   81 	adc	a, #0xff
+   0038 57            [ 4]   82 	ld	d, a
+   0039 DD 71 FC      [19]   83 	ld	-4 (ix), c
+   003C DD 70 FD      [19]   84 	ld	-3 (ix), b
+   003F DD 73 FE      [19]   85 	ld	-2 (ix), e
+   0042 DD 72 FF      [19]   86 	ld	-1 (ix), d
+   0045 7A            [ 4]   87 	ld	a, d
+   0046 B3            [ 4]   88 	or	a, e
+   0047 B0            [ 4]   89 	or	a, b
+   0048 B1            [ 4]   90 	or	a, c
+   0049 28 2D         [12]   91 	jr	Z,00107$
+                             92 ;echo.c:24: if (Qstatus()) {
+   004B CDr00r00      [17]   93 	call	_Qstatus
+   004E 7C            [ 4]   94 	ld	a, h
+   004F B5            [ 4]   95 	or	a, l
+   0050 28 CF         [12]   96 	jr	Z,00105$
+                             97 ;echo.c:25: ch = getchar();
+   0052 CDr00r00      [17]   98 	call	_Ygetchar
+   0055 4D            [ 4]   99 	ld	c, l
+                            100 ;echo.c:26: i = START;
+   0056 AF            [ 4]  101 	xor	a, a
+   0057 DD 77 FC      [19]  102 	ld	-4 (ix), a
+   005A DD 77 FD      [19]  103 	ld	-3 (ix), a
+   005D DD 36 FE 08   [19]  104 	ld	-2 (ix), #0x08
+   0061 AF            [ 4]  105 	xor	a, a
+   0062 DD 77 FF      [19]  106 	ld	-1 (ix), a
+                            107 ;echo.c:27: if (ch == ESC) return 0;	/* signal no error */
+   0065 79            [ 4]  108 	ld	a, c
+   0066 D6 1B         [ 7]  109 	sub	a, #0x1b
+   0068 20 05         [12]  110 	jr	NZ,00102$
+   006A 21 00 00      [10]  111 	ld	hl, #0x0000
+   006D 18 0C         [12]  112 	jr	00108$
+   006F                     113 00102$:
+                            114 ;echo.c:28: putchar(ch);
+   006F 79            [ 4]  115 	ld	a, c
+   0070 F5            [11]  116 	push	af
+   0071 33            [ 6]  117 	inc	sp
+   0072 CDr00r00      [17]  118 	call	_Yputchar
+   0075 33            [ 6]  119 	inc	sp
+   0076 18 A9         [12]  120 	jr	00105$
+   0078                     121 00107$:
+                            122 ;echo.c:31: return 1;	/* signal error */
+   0078 21 01 00      [10]  123 	ld	hl, #0x0001
+   007B                     124 00108$:
+                            125 ;echo.c:32: }
+   007B DD F9         [10]  126 	ld	sp, ix
+   007D DD E1         [14]  127 	pop	ix
+   007F C9            [10]  128 	ret
+   0080                     129 ___str_0:
+   0080 4B 65 79 62 6F 61   130 	.ascii "Keyboard echo test:"
+        72 64 20 65 63 68
+        6F 20 74 65 73 74
+        3A
+   0093 0A                  131 	.db 0x0a
+   0094 20 20 43 68 61 72   132 	.ascii "  Characters echoed as typed; end test with <ESC>"
+        61 63 74 65 72 73
+        20 65 63 68 6F 65
+        64 20 61 73 20 74
+        79 70 65 64 3B 20
+        65 6E 64 20 74 65
+        73 74 20 77 69 74
+        68 20 3C 45 53 43
+        3E
+   00C5 0A                  133 	.db 0x0a
+   00C6 00                  134 	.db 0x00
+                            135 	.area _CODE
+                            136 	.area _INITIALIZER
+                            137 	.area _CABS (ABS)

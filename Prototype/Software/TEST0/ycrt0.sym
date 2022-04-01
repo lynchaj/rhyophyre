@@ -1,0 +1,49 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 1.
+Hexadecimal [16-Bits]
+
+Symbol Table
+
+    .__.$$$.=  2710 L   |     .__.ABS.=  0000 G   |     .__.CPU.=  0001 L
+    .__.H$L.=  0000 L   |     ASCI    =  0040     |     CSIO    =  0040 
+    DMA     =  0040     |   0 Init_fro   0151 GR  |     MISC    =  0040 
+    MMU     =  0040     |     TIMR    =  0040     |   0 Ytab       0130 GR
+    Z180_IO_=  0040     |     Z8S180  =  0001     |   0 ___init_   0100 GR
+  0 _exit      0124 GR  |     _main      **** GX  |   0 argv       012C R
+    asext0  =  0052     |     asext1  =  0053     |     astc0h  =  005B 
+    astc0l  =  005A     |     astc1h  =  005D     |     astc1l  =  005C 
+    bbr     =  0079     |     bcr0h   =  0067     |     bcr0l   =  0066 
+    bcr1h   =  006F     |     bcr1l   =  006E     |     cbar    =  007A 
+    cbr     =  0078     |     ccr     =  005F     |     cmr     =  005E 
+    cntla0  =  0040     |     cntla1  =  0041     |     cntlb0  =  0042 
+    cntlb1  =  0043     |     cntr    =  004A     |     dar0b   =  0065 
+    dar0h   =  0064     |     dar0l   =  0063     |     dcntl   =  0072 
+    dev_Mark=  0080     |     dev_ide =  0080     |     dev_ide1=  0088 
+    dev_rtc =  008A     |     dev_sd  =  0089     |     dev_xmem=  0088 
+    dmode   =  0071     |     dstat   =  0070     |     frc     =  0058 
+  2 gsinit     0000 GR  |     iar1b   =  006D     |     iar1h   =  006C 
+    iar1l   =  006B     |     icr     =  003F     |   0 ift1       0153 R
+    il      =  0073     |   0 is_Z180    0101 R   |     itc     =  0074 
+  0 loc0       0000 GR  |     mar1b   =  006A     |     mar1h   =  0069 
+    mar1l   =  0068     |     omcr    =  007E     |     rcr     =  0076 
+    rdr0    =  0048     |     rdr1    =  0049     |     rldr0h  =  004F 
+    rldr0l  =  004E     |     rldr1h  =  0057     |     rldr1l  =  0056 
+    sar0b   =  0062     |     sar0h   =  0061     |     sar0l   =  0060 
+    stat0   =  0044     |     stat1   =  0045     |     tcr     =  0050 
+    tdr0    =  0046     |     tdr1    =  0047     |     tmdr0h  =  004D 
+    tmdr0l  =  004C     |     tmdr1h  =  0055     |     tmdr1l  =  0054 
+    trdr    =  004B 
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 2.
+Hexadecimal [16-Bits]
+
+Area Table
+
+   0 _CODE      size  15E   flags    0
+   1 _HOME      size    0   flags    0
+   2 _GSINIT    size    4   flags    0
+   3 _GSFINAL   size    1   flags    0
+   4 _DATA      size    0   flags    0
+   5 _BSEG      size    0   flags    0
+   6 _BSS       size    0   flags    0
+   7 _HEAP      size    0   flags    0
+

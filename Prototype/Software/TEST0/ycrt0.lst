@@ -1,0 +1,327 @@
+                              1 ;  modified 07/10/2014 for testing the Z180 Mark IV board -- John Coffman
+                              2 ;  modified 12/13/2013 for the Z180 SBC Mark IV board -- John Coffman
+                              3 ;  modified 4/22/2011 for the N8VEM Home Computer Z180 -- John Coffman
+                              4 ;
+                              5 ;--------------------------------------------------------------------------
+                              6 ;  ycrt0.s - Bootstrap crt0.s for a Z180
+                              7 ;
+                              8 ;  Copyright (C) 2000, Michael Hope
+                              9 ;
+                             10 ;  This library is free software; you can redistribute it and/or modify it
+                             11 ;  under the terms of the GNU General Public License as published by the
+                             12 ;  Free Software Foundation; either version 2.1, or (at your option) any
+                             13 ;  later version.
+                             14 ;
+                             15 ;  This library is distributed in the hope that it will be useful,
+                             16 ;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             17 ;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+                             18 ;  GNU General Public License for more details.
+                             19 ;
+                             20 ;  You should have received a copy of the GNU General Public License 
+                             21 ;  along with this library; see the file COPYING. If not, write to the
+                             22 ;  Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
+                             23 ;   MA 02110-1301, USA.
+                             24 ;
+                             25 ;  As a special exception, if you link this library with other files,
+                             26 ;  some of which are compiled with SDCC, to produce an executable,
+                             27 ;  this library does not by itself cause the resulting executable to
+                             28 ;  be covered by the GNU General Public License. This exception does
+                             29 ;  not however invalidate any other reasons why the executable file
+                             30 ;   might be covered by the GNU General Public License.
+                             31 ;--------------------------------------------------------------------------
+                             32 
+                             33         .module ycrt0
+                             34         .hd64
+                             35 .include "z180cpu.s"
+                              1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              2 ; z180cpu.s -- define I/O registers on the Z180 cpu
+                              3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              4 ;
+                              5 ;   This version is for assembly by  SDCC 3.0.0
+                              6 ;
+                              7 ; Copyright (C) 2013 John R. Coffman.  All rights reserved.
+                              8 ; Provided for hobbyist use on the N8VEM SBC Mark IV board.
+                              9 ;
+                             10 ; This program is free software: you can redistribute it and/or modify
+                             11 ; it under the terms of the GNU General Public License as published by
+                             12 ; the Free Software Foundation, either version 3 of the License, or
+                             13 ; (at your option) any later version.
+                             14 ;
+                             15 ; This program is distributed in the hope that it will be useful,
+                             16 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             17 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             18 ; GNU General Public License for more details.
+                             19 ;
+                             20 ; You should have received a copy of the GNU General Public License
+                             21 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             22 ;
+                             23 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             24 ; z180cpu.s
+                             25 ;
+                             26 ; define I/O registers on the Z180 cpu
+                             27 ;
+                     0001    28 Z8S180	= 1
+                             29 ;	hd64
+                             30 ; The following Z8S180= option must be set:
+                             31 ;       0       Z80180
+                             32 ;       1       Z8S180 or Z8L180
+                             33 
+                     0040    34 Z180_IO_BASE      =       0x0040          ; relocation of 64 (0x40) registers
+                             35 
+                             36 ;       ASCI registers
+                     0040    37 ASCI    =       Z180_IO_BASE
+                             38 
+                     0040    39 cntla0  =    ASCI + 0x00    ; control register A, channel 0     p. 293
+                     0041    40 cntla1  =    ASCI + 0x01    ;       channel 1
+                     0042    41 cntlb0  =    ASCI + 0x02    ; control register B, channel 0
+                     0043    42 cntlb1  =    ASCI + 0x03    ;       channel 1
+                     0044    43 stat0   =    ASCI + 0x04    ; status channel 0
+                     0045    44 stat1   =    ASCI + 0x05    ;       channel 1
+                     0046    45 tdr0    =    ASCI + 0x06    ; transmit data register channel 0
+                     0047    46 tdr1    =    ASCI + 0x07    ;       channel 1                   
+                     0048    47 rdr0    =    ASCI + 0x08    ; receive data register channel 0
+                     0049    48 rdr1    =    ASCI + 0x09    ;       channel 1
+                     0001    49 .if   Z8S180
+                     0052    50 asext0  =    ASCI + 0x12    ; ASCI extension control register 0
+                     0053    51 asext1  =    ASCI + 0x13    ; ASCI extension control register 1
+                     005A    52 astc0l  =    ASCI + 0x1A    ; time constant low register ch. 0
+                     005B    53 astc0h  =    ASCI + 0x1B    ; time constant high register ch. 0
+                     005C    54 astc1l  =    ASCI + 0x1C    ; time constant low register ch. 1
+                     005D    55 astc1h  =    ASCI + 0x1D    ; time constant high register ch. 1
+                             56 .endif
+                             57 
+                             58 ;       CSI/O registers
+                     0040    59 CSIO    =       Z180_IO_BASE
+                             60 
+                     004A    61 cntr    =    CSIO + 0x0A    ; CSI/O control register            p. 296
+                     004B    62 trdr    =    CSIO + 0x0B    ; transmit/receive data register
+                             63 
+                             64 ;       Timer registers
+                     0040    65 TIMR    =       Z180_IO_BASE
+                             66 
+                     004C    67 tmdr0l  =    TIMR + 0x0C    ; timer data channel 0 low
+                     004D    68 tmdr0h  =    TIMR + 0x0D    ;       channel 0 high
+                     004E    69 rldr0l  =    TIMR + 0x0E    ; timer reload channel 0 low
+                     004F    70 rldr0h  =    TIMR + 0x0F    ;       channel 0 high
+                     0050    71 tcr     =    TIMR + 0x10    ; timer control register channel 0 low
+                     0054    72 tmdr1l  =    TIMR + 0x14    ; timer data channel 1 low
+                     0055    73 tmdr1h  =    TIMR + 0x15    ;       channel 1 high
+                     0056    74 rldr1l  =    TIMR + 0x16    ; timer reload channel 1 low
+                     0057    75 rldr1h  =    TIMR + 0x17    ;       channel 1 high
+                             76 
+                     0058    77 frc     =    TIMR + 0x18    ; free running counter (read only)
+                     0001    78 .if  Z8S180
+                     005E    79 cmr     =    TIMR + 0x1E    ; Clock multiplier register
+                     005F    80 ccr     =    TIMR + 0x1F    ; CPU control register
+                             81 .endif
+                             82 
+                             83 ;       DMA registers
+                     0040    84 DMA     =       Z180_IO_BASE
+                             85 
+                     0060    86 sar0l   =     DMA + 0x20    ; source address channel 0 low
+                     0061    87 sar0h   =     DMA + 0x21    ;       channel 0 high
+                     0062    88 sar0b   =     DMA + 0x22    ; source address channel 0 B
+                     0063    89 dar0l   =     DMA + 0x23    ; destination address channel 0 low
+                     0064    90 dar0h   =     DMA + 0x24    ;       channel 0 high
+                     0065    91 dar0b   =     DMA + 0x25    ;       channel 0 B
+                     0066    92 bcr0l   =     DMA + 0x26    ; byte count channel 0 low
+                     0067    93 bcr0h   =     DMA + 0x27    ;       channel 0 high
+                     0068    94 mar1l   =     DMA + 0x28    ; memory address channel 1 low
+                     0069    95 mar1h   =     DMA + 0x29    ;       channel 1 high
+                     006A    96 mar1b   =     DMA + 0x2A    ;       channel 1 B
+                     006B    97 iar1l   =     DMA + 0x2B    ; I/O address register channel 1 low
+                     006C    98 iar1h   =     DMA + 0x2C    ;       channel 1 high
+                     0001    99 .if  Z8S180
+                     006D   100 iar1b   =     DMA + 0x2D    ;       channel 1 B
+                            101 .endif
+                     006E   102 bcr1l   =     DMA + 0x2E    ; byte count channel 1 low
+                     006F   103 bcr1h   =     DMA + 0x2F    ;       channel 1 high
+                     0070   104 dstat   =     DMA + 0x30    ; DMA status register
+                     0071   105 dmode   =     DMA + 0x31    ; DMA mode register             p. 299
+                     0072   106 dcntl   =     DMA + 0x32    ; DMA/WAIT control register
+                            107 
+                            108 ;       MMU registers
+                     0040   109 MMU     =       Z180_IO_BASE
+                            110 
+                     0078   111 cbr     =     MMU + 0x38    ; common base register
+                     0079   112 bbr     =     MMU + 0x39    ; bank base register
+                     007A   113 cbar    =     MMU + 0x3A    ; common/bank register
+                            114 
+                            115 ;       MISCELLANEOUS registers
+                     0040   116 MISC    =       Z180_IO_BASE
+                            117 
+                     0073   118 il      =    MISC + 0x33    ; interrupt vector low reg.
+                     0074   119 itc     =    MISC + 0x34    ; INT/TRAP control
+                     0076   120 rcr     =    MISC + 0x36    ; refresh control register      p. 302
+                     007E   121 omcr    =    MISC + 0x3E    ; operation mode control       p. 300
+                     003F   122 icr     =           0x3F    ; I/O base control register
+                            123 
+                            124 
+                            125 ; END z180cpu.s
+                            126 
+                             36 .include "mark4.inc"
+                              1 ;/*
+                              2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              3 ;  mark4.inc -- Z180 SBC Mark IV device definitions
+                              4 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              5 ;
+                              6 ;   Copyright (C) 2013,2014 John R. Coffman.  All rights reserved.
+                              7 ;   Provided for hobbyist use on the Z180 SBC Mark IV board.
+                              8 ;
+                              9 ; This program is free software: you can redistribute it and/or modify
+                             10 ; it under the terms of the GNU General Public License as published by
+                             11 ; the Free Software Foundation, either version 3 of the License, or
+                             12 ; (at your option) any later version.
+                             13 ;
+                             14 ; This program is distributed in the hope that it will be useful,
+                             15 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             16 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             17 ; GNU General Public License for more details.
+                             18 ;
+                             19 ; You should have received a copy of the GNU General Public License
+                             20 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             21 ;
+                             22 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             23 
+                     0080    24 dev_MarkIV_board =	0x80		; jumper settings (P10)
+                             25 
+                     0080    26 dev_ide		=	dev_MarkIV_board + 0x0
+                     0088    27 dev_ide1	=	dev_MarkIV_board + 0x8	; +6 or +7 required
+                             28 
+                     0088    29 dev_xmem	=	dev_MarkIV_board + 8
+                     0089    30 dev_sd		=	dev_MarkIV_board + 0x9
+                     008A    31 dev_rtc		=	dev_MarkIV_board + 0xA
+                             32 
+                             33 ; end mark4.s
+                     0000    34 .if 0	     			; */
+                             35 #define  dev_MarkIV_board  0x80
+                             36 
+                             37 #define dev_ide  dev_MarkIV_board+0
+                             38 #define dev_ide1 dev_MarkIV_board+8
+                             39 #define dev_xmem dev_MarkIV_board+8
+                             40 #define dev_sd   dev_MarkIV_board+9
+                             41 #define dev_rtc  dev_MarkIV_board+10
+                             42 				/*
+                             43 .endif
+                             44 
+                             45 ; end  mark4.inc    */
+                             37 
+                             38 	.globl	_main
+                             39 
+                             40 	;; Ordering of segments for the linker.
+                             41 	.area	_HOME
+                             42 	.area	_CODE
+                             43         .area   _GSINIT
+                             44         .area   _GSFINAL
+                             45 
+                             46 	.area	_DATA
+                             47 	.area	_BSEG
+                             48         .area   _BSS
+                             49         .area   _HEAP
+                             50 
+                             51 	.area	_CODE
+   0000                      52 loc0::
+   0000 C3r00r01      [ 9]   53 	jp	___init___
+   0003                      54      	.ds	0x100-(.-loc0)
+                             55 
+   0100                      56 ___init___::
+   0100 F3            [ 3]   57 	di	; DELETE THIS IN THE FUTURE
+   0101                      58 is_Z180:
+   0101 3E 40         [ 6]   59 	ld	a,#Z180_IO_BASE
+   0103 ED 39 3F      [13]   60 	out0	(icr),a
+   0106 3E F0         [ 6]   61 	ld	a,#0xF0
+   0108 ED 39 78      [13]   62 	out0	(cbr),a
+                             63 ;
+   010B 31 00 FF      [ 9]   64 	ld	sp,#0xFF00
+                             65 ; initialize the Z180 internal registers
+   010E 21r30r01      [ 9]   66 	ld	hl,#Ytab
+   0111 CDr51r01      [16]   67 	call	Init_from_Table
+                             68 
+                             69 ; initialize global variables
+   0114 CDr00r00      [16]   70         call    gsinit
+                             71 
+   0117 21r2Cr01      [ 9]   72 	ld	hl,#argv
+   011A E5            [11]   73 	push	hl
+   011B 21 00 00      [ 9]   74 	ld	hl,#0
+   011E E5            [11]   75 	push	hl
+   011F CDr00r00      [16]   76 	call	_main
+   0122 F1            [ 9]   77 	pop	af
+   0123 F1            [ 9]   78 	pop	af
+                             79 
+   0124                      80 _exit::
+   0124                      81 1$:
+   0124 F3            [ 3]   82 	di				; all interrupts off
+   0125 3E 00         [ 6]   83 	ld	a,#0			; SD_CS off
+   0127 D3 89         [10]   84 	out	(dev_sd),a
+   0129 76            [ 3]   85 	halt
+   012A 18 F8         [ 8]   86 	jr	1$
+                             87 
+                             88 ; arguments to main
+   012C 00 00 00 00          89 argv:	.dw	0,0
+                             90 
+                             91 
+                             92 ;
+                             93 ;  Table of Z180 registes to be set up VERY early
+                             94 ;
+                             95 ;  entries consist of
+                             96 ;	.DB	reg, value
+                             97 ;
+   0130                      98 Ytab::
+   0130 3F 40                99 	.db	icr, Z180_IO_BASE	; must be first !!!
+   0132 76 7F               100         .db     rcr, 0x7F               ; turn off Refresh
+   0134 78 F0               101 	.db	cbr, 0xF0		; actually done at RST 0 reset vector
+   0136 5E 00               102 	.db	cmr, 0x00		; Clock Multiplier; xtal*1 selected
+   0138 5F 00               103         .db     ccr, 0x00               ; Cpu control; xtal/2 selected
+   013A 7A 80               104         .db     cbar, 0x80              ; Common 0 at 0x0000 (can't change), 
+                            105                                         ; Bank at 0x0000, Common 1 at 0x8000
+   013C 88 00               106 	.db	dev_xmem, 0x00		; use ROM and on-bord RAM
+                            107 ;	.db	bbr, 0x00		; done by reset, or by 'chain'
+                            108 
+                            109 ; some SIO and DMA setup
+   013E 52 00               110 	.db	asext0, 0x00		; ASCI extension control register 0
+   0140 53 00               111 	.db	asext1, 0x00		; ASCI extension control register 1
+   0142 40 65               112         .db     cntla0, 0x65            ; 8bits, noPar, 2stop
+   0144 41 05               113         .db     cntla1, 0x05            ; don't use TEND0, 8bits,noPar,2stop
+   0146 42 21               114 	.db	cntlb0, 0x21		; PS=1 (div 30) DR=0 (div 16) SSS=001
+                            115 				; PHI=18432k/2, /30, /16, SSS=/2**1 = 9600
+   0148 71 00               116         .db     dmode, 0x00             ; use DREQ0
+   014A 72 FA               117         .db     dcntl, 0xFA             ; Mem ws = 3, IO Wait States = 4,
+                            118                                         ; DMA1=edge, DMA0=level, DMA1=READ
+   014C 6D 00               119         .db     iar1b, 0x00             ; defaults (use DMA ch 1)
+                            120 	
+                            121 ; init the SD card interface
+   014E 89 00               122 	.db	dev_sd, 0x00		; turn off CS
+                            123 
+                            124 ; end of table at EOF register code
+   0150 FF                  125 	.db	-1
+                            126 
+                            127 
+                            128 
+                            129 ; Initialize Z180 stuff from a table of values
+                            130 ;
+                            131 ; enter with HL = address of table
+                            132 ;
+   0151                     133 Init_from_Table::
+   0151 06 00         [ 6]  134 	ld	b,#0		; for Z180 CPU internal registers
+   0153                     135 ift1:
+   0153 4E            [ 6]  136 	ld	c,(hl)		; get device code
+   0154 23            [ 4]  137 	inc	hl
+   0155 0C            [ 4]  138 	inc	c		; test for -1
+   0156 C8            [10]  139 	ret	z		; return if END marker
+                            140 
+   0157 0D            [ 4]  141 	dec	c		; restore device code
+   0158 7E            [ 6]  142 	ld	a,(hl)		; get value
+   0159 23            [ 4]  143 	inc	hl
+   015A ED 79         [10]  144 	out	(c),a		; output to (C) -- actually (BC)
+   015C 18 F5         [ 8]  145 	jr	ift1		; loop back
+                            146 	
+                            147 
+                            148         .area   _GSINIT
+   0000                     149 gsinit::
+   0000 3E 00         [ 6]  150 	ld	a,#0
+   0002 D3 D9         [10]  151 	out	(0xD9),a
+                            152 
+                            153         .area   _GSFINAL
+   0000 C9            [ 9]  154         ret
+                            155 
+                            156 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

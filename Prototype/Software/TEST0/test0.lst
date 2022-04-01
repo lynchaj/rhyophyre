@@ -1,0 +1,506 @@
+                              1 ;--------------------------------------------------------
+                              2 ; File Created by SDCC : free open source ANSI-C Compiler
+                              3 ; Version 4.0.0 #11528 (Linux)
+                              4 ;--------------------------------------------------------
+                              5 	.module test0
+                              6 	.optsdcc -mz80
+                              7 	
+                              8 ;--------------------------------------------------------
+                              9 ; Public variables in this module
+                             10 ;--------------------------------------------------------
+                             11 	.globl _main
+                             12 	.globl _check_cts
+                             13 	.globl _numout
+                             14 	.globl _putstr
+                             15 	.globl _check_P10
+                             16 	.globl _old_P10
+                             17 	.globl _cpu_type
+                             18 	.globl _lite_on
+                             19 	.globl _lite_off
+                             20 	.globl _wait
+                             21 	.globl _Yputchar
+                             22 	.globl _cprintf
+                             23 	.globl _inp
+                             24 	.globl _outp
+                             25 	.globl _cputype
+                             26 	.globl _ptype
+                             27 	.globl _qbf
+                             28 	.globl _str
+                             29 ;--------------------------------------------------------
+                             30 ; special function registers
+                             31 ;--------------------------------------------------------
+                             32 ;--------------------------------------------------------
+                             33 ; ram data
+                             34 ;--------------------------------------------------------
+                             35 	.area _DATA
+   0000                      36 _cputype::
+   0000                      37 	.ds 1
+                             38 ;--------------------------------------------------------
+                             39 ; ram data
+                             40 ;--------------------------------------------------------
+                             41 	.area _INITIALIZED
+                             42 ;--------------------------------------------------------
+                             43 ; absolute external ram data
+                             44 ;--------------------------------------------------------
+                             45 	.area _DABS (ABS)
+                             46 ;--------------------------------------------------------
+                             47 ; global & static initialisations
+                             48 ;--------------------------------------------------------
+                             49 	.area _HOME
+                             50 	.area _GSINIT
+                             51 	.area _GSFINAL
+                             52 	.area _GSINIT
+                             53 ;--------------------------------------------------------
+                             54 ; Home
+                             55 ;--------------------------------------------------------
+                             56 	.area _HOME
+                             57 	.area _HOME
+                             58 ;--------------------------------------------------------
+                             59 ; code
+                             60 ;--------------------------------------------------------
+                             61 	.area _CODE
+                             62 ;z180.h:45: static void _ENABLE_Z180_ASSEMBLER_(void) __naked { __asm .hd64 __endasm; }
+                             63 ;	---------------------------------
+                             64 ; Function _ENABLE_Z180_ASSEMBLER_
+                             65 ; ---------------------------------
+   0000                      66 __ENABLE_Z180_ASSEMBLER_:
+                             67 	.hd64	
+                             68 ;test0.c:37: int old_P10(byte device)
+                             69 ;	---------------------------------
+                             70 ; Function old_P10
+                             71 ; ---------------------------------
+   0000                      72 _old_P10::
+   0000 DD E5         [14]   73 	push	ix
+   0002 DD 21 00 00   [12]   74 	ld	ix,#0
+   0006 DD 39         [10]   75 	add	ix,sp
+                             76 ;test0.c:41: device = (device & 0xF0) + 9;
+   0008 DD 7E 04      [14]   77 	ld	a, 4 (ix)
+   000B E6 F0         [ 6]   78 	and	a, #0xf0
+   000D C6 09         [ 6]   79 	add	a, #0x09
+                             80 ;test0.c:42: tem = inp(device);
+   000F DD 77 04      [15]   81 	ld	4 (ix), a
+   0012 F5            [11]   82 	push	af
+   0013 33            [ 4]   83 	inc	sp
+   0014 CDr00r00      [16]   84 	call	_inp
+   0017 33            [ 4]   85 	inc	sp
+   0018 4D            [ 4]   86 	ld	c, l
+                             87 ;test0.c:43: if (tem & ~SD_ALL) return 0;
+   0019 79            [ 4]   88 	ld	a, c
+   001A E6 0B         [ 6]   89 	and	a, #0x0b
+   001C 28 05         [ 8]   90 	jr	Z,00102$
+   001E 21 00 00      [ 9]   91 	ld	hl, #0x0000
+   0021 18 4B         [ 8]   92 	jr	00106$
+   0023                      93 00102$:
+                             94 ;test0.c:45: if (tem & SD_IPEND) {
+   0023 CB 79         [ 7]   95 	bit	7, c
+   0025 28 21         [ 8]   96 	jr	Z,00104$
+                             97 ;test0.c:46: outp(device, tem);
+   0027 79            [ 4]   98 	ld	a, c
+   0028 F5            [11]   99 	push	af
+   0029 33            [ 4]  100 	inc	sp
+   002A DD 7E 04      [14]  101 	ld	a, 4 (ix)
+   002D F5            [11]  102 	push	af
+   002E 33            [ 4]  103 	inc	sp
+   002F CDr00r00      [16]  104 	call	_outp
+   0032 F1            [ 9]  105 	pop	af
+                            106 ;test0.c:47: tem = !(inp(device) & SD_IPEND);
+   0033 DD 7E 04      [14]  107 	ld	a, 4 (ix)
+   0036 F5            [11]  108 	push	af
+   0037 33            [ 4]  109 	inc	sp
+   0038 CDr00r00      [16]  110 	call	_inp
+   003B 33            [ 4]  111 	inc	sp
+   003C 7D            [ 4]  112 	ld	a, l
+   003D E6 80         [ 6]  113 	and	a, #0x80
+   003F F6 00         [ 6]  114 	or	a,#0x00
+   0041 D6 01         [ 6]  115 	sub	a,#0x01
+   0043 3E 00         [ 6]  116 	ld	a, #0x00
+   0045 17            [ 3]  117 	rla
+   0046 18 23         [ 8]  118 	jr	00105$
+   0048                     119 00104$:
+                            120 ;test0.c:50: outp(device, tem ^ SD_CD);
+   0048 79            [ 4]  121 	ld	a, c
+   0049 EE 20         [ 6]  122 	xor	a, #0x20
+   004B F5            [11]  123 	push	af
+   004C 33            [ 4]  124 	inc	sp
+   004D DD 7E 04      [14]  125 	ld	a, 4 (ix)
+   0050 F5            [11]  126 	push	af
+   0051 33            [ 4]  127 	inc	sp
+   0052 CDr00r00      [16]  128 	call	_outp
+   0055 F1            [ 9]  129 	pop	af
+                            130 ;test0.c:51: tem = !!(inp(device) & SD_IPEND);
+   0056 DD 7E 04      [14]  131 	ld	a, 4 (ix)
+   0059 F5            [11]  132 	push	af
+   005A 33            [ 4]  133 	inc	sp
+   005B CDr00r00      [16]  134 	call	_inp
+   005E 33            [ 4]  135 	inc	sp
+   005F 7D            [ 4]  136 	ld	a, l
+   0060 E6 80         [ 6]  137 	and	a, #0x80
+   0062 F6 00         [ 6]  138 	or	a,#0x00
+   0064 D6 01         [ 6]  139 	sub	a,#0x01
+   0066 3E 00         [ 6]  140 	ld	a, #0x00
+   0068 17            [ 3]  141 	rla
+   0069 EE 01         [ 6]  142 	xor	a, #0x01
+   006B                     143 00105$:
+                            144 ;test0.c:53: return tem;
+   006B 6F            [ 4]  145 	ld	l, a
+   006C 26 00         [ 6]  146 	ld	h, #0x00
+   006E                     147 00106$:
+                            148 ;test0.c:54: }
+   006E DD E1         [12]  149 	pop	ix
+   0070 C9            [ 9]  150 	ret
+                            151 ;test0.c:57: int check_P10(void)
+                            152 ;	---------------------------------
+                            153 ; Function check_P10
+                            154 ; ---------------------------------
+   0071                     155 _check_P10::
+                            156 ;test0.c:60: byte err = !old_P10(0x89);
+   0071 3E 89         [ 6]  157 	ld	a, #0x89
+   0073 F5            [11]  158 	push	af
+   0074 33            [ 4]  159 	inc	sp
+   0075 CDr00r00      [16]  160 	call	_old_P10
+   0078 33            [ 4]  161 	inc	sp
+   0079 4D            [ 4]  162 	ld	c, l
+   007A 7C            [ 4]  163 	ld	a, h
+   007B B1            [ 4]  164 	or	a, c
+   007C D6 01         [ 6]  165 	sub	a,#0x01
+   007E 3E 00         [ 6]  166 	ld	a, #0x00
+   0080 17            [ 3]  167 	rla
+   0081 5F            [ 4]  168 	ld	e, a
+                            169 ;test0.c:62: for (device=0; !err && device<0xFF; device+=0x10) {
+   0082 21 00 00      [ 9]  170 	ld	hl, #0x0000
+   0085                     171 00108$:
+   0085 7B            [ 4]  172 	ld	a, e
+   0086 B7            [ 4]  173 	or	a, a
+   0087 20 2E         [ 8]  174 	jr	NZ,00105$
+   0089 4D            [ 4]  175 	ld	c, l
+   008A 44            [ 4]  176 	ld	b, h
+   008B 79            [ 4]  177 	ld	a, c
+   008C D6 FF         [ 6]  178 	sub	a, #0xff
+   008E 78            [ 4]  179 	ld	a, b
+   008F DE 00         [ 6]  180 	sbc	a, #0x00
+   0091 30 24         [ 8]  181 	jr	NC,00105$
+                            182 ;test0.c:63: if (device>=0x40 && device<0x8F) continue;
+   0093 79            [ 4]  183 	ld	a, c
+   0094 D6 40         [ 6]  184 	sub	a, #0x40
+   0096 78            [ 4]  185 	ld	a, b
+   0097 DE 00         [ 6]  186 	sbc	a, #0x00
+   0099 38 08         [ 8]  187 	jr	C,00102$
+   009B 79            [ 4]  188 	ld	a, c
+   009C D6 8F         [ 6]  189 	sub	a, #0x8f
+   009E 78            [ 4]  190 	ld	a, b
+   009F DE 00         [ 6]  191 	sbc	a, #0x00
+   00A1 38 0E         [ 8]  192 	jr	C,00104$
+   00A3                     193 00102$:
+                            194 ;test0.c:64: err |= old_P10(device);
+   00A3 7D            [ 4]  195 	ld	a, l
+   00A4 C5            [11]  196 	push	bc
+   00A5 D5            [11]  197 	push	de
+   00A6 F5            [11]  198 	push	af
+   00A7 33            [ 4]  199 	inc	sp
+   00A8 CDr00r00      [16]  200 	call	_old_P10
+   00AB 33            [ 4]  201 	inc	sp
+   00AC D1            [ 9]  202 	pop	de
+   00AD C1            [ 9]  203 	pop	bc
+   00AE 7D            [ 4]  204 	ld	a, l
+   00AF B3            [ 4]  205 	or	a, e
+   00B0 5F            [ 4]  206 	ld	e, a
+   00B1                     207 00104$:
+                            208 ;test0.c:62: for (device=0; !err && device<0xFF; device+=0x10) {
+   00B1 21 10 00      [ 9]  209 	ld	hl, #0x0010
+   00B4 09            [ 7]  210 	add	hl, bc
+   00B5 18 CE         [ 8]  211 	jr	00108$
+   00B7                     212 00105$:
+                            213 ;test0.c:66: return err;
+   00B7 26 00         [ 6]  214 	ld	h, #0x00
+   00B9 6B            [ 4]  215 	ld	l, e
+                            216 ;test0.c:67: }
+   00BA C9            [ 9]  217 	ret
+                            218 ;test0.c:70: void putstr(char *str)
+                            219 ;	---------------------------------
+                            220 ; Function putstr
+                            221 ; ---------------------------------
+   00BB                     222 _putstr::
+                            223 ;test0.c:74: ch = *str++;
+   00BB C1            [ 9]  224 	pop	bc
+   00BC D1            [ 9]  225 	pop	de
+   00BD D5            [11]  226 	push	de
+   00BE C5            [11]  227 	push	bc
+   00BF 1A            [ 6]  228 	ld	a, (de)
+   00C0 47            [ 4]  229 	ld	b, a
+   00C1 13            [ 4]  230 	inc	de
+   00C2 FD 21 02 00   [12]  231 	ld	iy, #2
+   00C6 FD 39         [10]  232 	add	iy, sp
+   00C8 FD 73 00      [15]  233 	ld	0 (iy), e
+   00CB FD 72 01      [15]  234 	ld	1 (iy), d
+                            235 ;test0.c:75: while (ch) {
+   00CE D1            [ 9]  236 	pop	de
+   00CF E1            [ 9]  237 	pop	hl
+   00D0 E5            [11]  238 	push	hl
+   00D1 D5            [11]  239 	push	de
+   00D2                     240 00103$:
+   00D2 78            [ 4]  241 	ld	a, b
+   00D3 B7            [ 4]  242 	or	a, a
+   00D4 C8            [10]  243 	ret	Z
+                            244 ;test0.c:76: if (ch == '\n') putchar('\r');
+   00D5 78            [ 4]  245 	ld	a, b
+   00D6 D6 0A         [ 6]  246 	sub	a, #0x0a
+   00D8 20 0C         [ 8]  247 	jr	NZ,00102$
+   00DA E5            [11]  248 	push	hl
+   00DB C5            [11]  249 	push	bc
+   00DC 3E 0D         [ 6]  250 	ld	a, #0x0d
+   00DE F5            [11]  251 	push	af
+   00DF 33            [ 4]  252 	inc	sp
+   00E0 CDr00r00      [16]  253 	call	_Yputchar
+   00E3 33            [ 4]  254 	inc	sp
+   00E4 C1            [ 9]  255 	pop	bc
+   00E5 E1            [ 9]  256 	pop	hl
+   00E6                     257 00102$:
+                            258 ;test0.c:77: putchar(ch);
+   00E6 E5            [11]  259 	push	hl
+   00E7 C5            [11]  260 	push	bc
+   00E8 33            [ 4]  261 	inc	sp
+   00E9 CDr00r00      [16]  262 	call	_Yputchar
+   00EC 33            [ 4]  263 	inc	sp
+   00ED E1            [ 9]  264 	pop	hl
+                            265 ;test0.c:78: ch = *str++;
+   00EE 46            [ 6]  266 	ld	b, (hl)
+   00EF 23            [ 4]  267 	inc	hl
+                            268 ;test0.c:80: }
+   00F0 18 E0         [ 8]  269 	jr	00103$
+                            270 ;test0.c:83: void numout(uint8 n)
+                            271 ;	---------------------------------
+                            272 ; Function numout
+                            273 ; ---------------------------------
+   00F2                     274 _numout::
+   00F2 3B            [ 4]  275 	dec	sp
+                            276 ;test0.c:86: lite_off();
+   00F3 CDr00r00      [16]  277 	call	_lite_off
+                            278 ;test0.c:87: wait(75);
+   00F6 21 4B 00      [ 9]  279 	ld	hl, #0x004b
+   00F9 E5            [11]  280 	push	hl
+   00FA CDr00r00      [16]  281 	call	_wait
+   00FD F1            [ 9]  282 	pop	af
+                            283 ;test0.c:88: while (n--) {
+   00FE FD 21 03 00   [12]  284 	ld	iy, #3
+   0102 FD 39         [10]  285 	add	iy, sp
+   0104 FD 7E 00      [14]  286 	ld	a, 0 (iy)
+   0107 FD 2B         [ 7]  287 	dec	iy
+   0109 FD 2B         [ 7]  288 	dec	iy
+   010B FD 2B         [ 7]  289 	dec	iy
+   010D FD 77 00      [15]  290 	ld	0 (iy), a
+   0110                     291 00101$:
+   0110 FD 21 00 00   [12]  292 	ld	iy, #0
+   0114 FD 39         [10]  293 	add	iy, sp
+   0116 FD 4E 00      [14]  294 	ld	c, 0 (iy)
+   0119 FD 35 00      [18]  295 	dec	0 (iy)
+   011C 79            [ 4]  296 	ld	a, c
+   011D B7            [ 4]  297 	or	a, a
+   011E 28 18         [ 8]  298 	jr	Z,00103$
+                            299 ;test0.c:89: lite_on();
+   0120 CDr00r00      [16]  300 	call	_lite_on
+                            301 ;test0.c:90: wait(25);
+   0123 21 19 00      [ 9]  302 	ld	hl, #0x0019
+   0126 E5            [11]  303 	push	hl
+   0127 CDr00r00      [16]  304 	call	_wait
+   012A F1            [ 9]  305 	pop	af
+                            306 ;test0.c:91: lite_off();
+   012B CDr00r00      [16]  307 	call	_lite_off
+                            308 ;test0.c:92: wait(35);
+   012E 21 23 00      [ 9]  309 	ld	hl, #0x0023
+   0131 E5            [11]  310 	push	hl
+   0132 CDr00r00      [16]  311 	call	_wait
+   0135 F1            [ 9]  312 	pop	af
+   0136 18 D8         [ 8]  313 	jr	00101$
+   0138                     314 00103$:
+                            315 ;test0.c:94: wait(100);
+   0138 21 64 00      [ 9]  316 	ld	hl, #0x0064
+   013B E5            [11]  317 	push	hl
+   013C CDr00r00      [16]  318 	call	_wait
+   013F F1            [ 9]  319 	pop	af
+                            320 ;test0.c:95: }
+   0140 33            [ 4]  321 	inc	sp
+   0141 C9            [ 9]  322 	ret
+                            323 ;test0.c:97: byte check_cts(void)
+                            324 ;	---------------------------------
+                            325 ; Function check_cts
+                            326 ; ---------------------------------
+   0142                     327 _check_cts::
+                            328 ;test0.c:101: cts = inp(CNTLB0);
+   0142 3E 42         [ 6]  329 	ld	a, #0x42
+   0144 F5            [11]  330 	push	af
+   0145 33            [ 4]  331 	inc	sp
+   0146 CDr00r00      [16]  332 	call	_inp
+   0149 33            [ 4]  333 	inc	sp
+                            334 ;test0.c:103: if (cts & (1<<5)) return 0;
+   014A CB 6D         [ 7]  335 	bit	5, l
+                            336 ;test0.c:104: return 1;
+   014C 2E 00         [ 6]  337 	ld	l, #0x00
+   014E C0            [10]  338 	ret	NZ
+   014F 2E 01         [ 6]  339 	ld	l, #0x01
+                            340 ;test0.c:105: }
+   0151 C9            [ 9]  341 	ret
+                            342 ;test0.c:119: void main(void)
+                            343 ;	---------------------------------
+                            344 ; Function main
+                            345 ; ---------------------------------
+   0152                     346 _main::
+                            347 ;test0.c:125: wait(150);
+   0152 21 96 00      [ 9]  348 	ld	hl, #0x0096
+   0155 E5            [11]  349 	push	hl
+   0156 CDr00r00      [16]  350 	call	_wait
+                            351 ;test0.c:127: numout(5);
+   0159 26 05         [ 6]  352 	ld	h,#0x05
+   015B E3            [16]  353 	ex	(sp),hl
+   015C 33            [ 4]  354 	inc	sp
+   015D CDrF2r00      [16]  355 	call	_numout
+   0160 33            [ 4]  356 	inc	sp
+                            357 ;test0.c:128: cputype = cpu_type();
+   0161 CDr00r00      [16]  358 	call	_cpu_type
+   0164 7D            [ 4]  359 	ld	a, l
+   0165 32r00r00      [13]  360 	ld	(_cputype+0), a
+                            361 ;test0.c:129: numout(cputype ? cputype : 25);
+   0168 FD 21r00r00   [12]  362 	ld	iy, #_cputype
+   016C FD 7E 00      [14]  363 	ld	a, 0 (iy)
+   016F B7            [ 4]  364 	or	a, a
+   0170 28 05         [ 8]  365 	jr	Z,00115$
+   0172 FD 4E 00      [14]  366 	ld	c, 0 (iy)
+   0175 18 03         [ 8]  367 	jr	00116$
+   0177                     368 00115$:
+   0177 01 19 00      [ 9]  369 	ld	bc, #0x0019
+   017A                     370 00116$:
+   017A 79            [ 4]  371 	ld	a, c
+   017B F5            [11]  372 	push	af
+   017C 33            [ 4]  373 	inc	sp
+   017D CDrF2r00      [16]  374 	call	_numout
+   0180 33            [ 4]  375 	inc	sp
+                            376 ;test0.c:130: do {
+   0181                     377 00103$:
+                            378 ;test0.c:131: i = check_cts();
+   0181 CDr42r01      [16]  379 	call	_check_cts
+                            380 ;test0.c:132: if (i==0) numout(4);
+   0184 7D            [ 4]  381 	ld	a, l
+   0185 B7            [ 4]  382 	or	a, a
+   0186 20 0A         [ 8]  383 	jr	NZ,00104$
+   0188 E5            [11]  384 	push	hl
+   0189 3E 04         [ 6]  385 	ld	a, #0x04
+   018B F5            [11]  386 	push	af
+   018C 33            [ 4]  387 	inc	sp
+   018D CDrF2r00      [16]  388 	call	_numout
+   0190 33            [ 4]  389 	inc	sp
+   0191 E1            [ 9]  390 	pop	hl
+   0192                     391 00104$:
+                            392 ;test0.c:133: } while (!i);
+   0192 7D            [ 4]  393 	ld	a, l
+   0193 B7            [ 4]  394 	or	a, a
+   0194 28 EB         [ 8]  395 	jr	Z,00103$
+                            396 ;test0.c:134: numout(1);
+   0196 3E 01         [ 6]  397 	ld	a, #0x01
+   0198 F5            [11]  398 	push	af
+   0199 33            [ 4]  399 	inc	sp
+   019A CDrF2r00      [16]  400 	call	_numout
+   019D 33            [ 4]  401 	inc	sp
+                            402 ;test0.c:136: putstr(str);
+   019E 21rD8r01      [ 9]  403 	ld	hl, #_str
+   01A1 E5            [11]  404 	push	hl
+   01A2 CDrBBr00      [16]  405 	call	_putstr
+                            406 ;test0.c:138: printf("%s\n","Hello World!\n");
+   01A5 21r32r02      [ 9]  407 	ld	hl, #___str_1
+   01A8 E3            [16]  408 	ex	(sp),hl
+   01A9 21r2Er02      [ 9]  409 	ld	hl, #___str_0
+   01AC E5            [11]  410 	push	hl
+   01AD CDr00r00      [16]  411 	call	_cprintf
+   01B0 F1            [ 9]  412 	pop	af
+   01B1 F1            [ 9]  413 	pop	af
+                            414 ;test0.c:139: for (i=0; i<NLINE; i++) {
+   01B2 0E 00         [ 6]  415 	ld	c, #0x00
+                            416 ;test0.c:140: for (j=0; j<i; j++) putchar(' ');
+   01B4                     417 00122$:
+   01B4 06 00         [ 6]  418 	ld	b, #0x00
+   01B6                     419 00109$:
+   01B6 78            [ 4]  420 	ld	a, b
+   01B7 91            [ 4]  421 	sub	a, c
+   01B8 30 0D         [ 8]  422 	jr	NC,00106$
+   01BA C5            [11]  423 	push	bc
+   01BB 3E 20         [ 6]  424 	ld	a, #0x20
+   01BD F5            [11]  425 	push	af
+   01BE 33            [ 4]  426 	inc	sp
+   01BF CDr00r00      [16]  427 	call	_Yputchar
+   01C2 33            [ 4]  428 	inc	sp
+   01C3 C1            [ 9]  429 	pop	bc
+   01C4 04            [ 4]  430 	inc	b
+   01C5 18 EF         [ 8]  431 	jr	00109$
+   01C7                     432 00106$:
+                            433 ;test0.c:141: putstr(qbf);
+   01C7 C5            [11]  434 	push	bc
+   01C8 21rF8r01      [ 9]  435 	ld	hl, #_qbf
+   01CB E5            [11]  436 	push	hl
+   01CC CDrBBr00      [16]  437 	call	_putstr
+   01CF F1            [ 9]  438 	pop	af
+   01D0 C1            [ 9]  439 	pop	bc
+                            440 ;test0.c:139: for (i=0; i<NLINE; i++) {
+   01D1 0C            [ 4]  441 	inc	c
+   01D2 79            [ 4]  442 	ld	a, c
+   01D3 D6 12         [ 6]  443 	sub	a, #0x12
+   01D5 38 DD         [ 8]  444 	jr	C,00122$
+                            445 ;test0.c:187: return;
+                            446 ;test0.c:188: }
+   01D7 C9            [ 9]  447 	ret
+   01D8                     448 _str:
+   01D8 0A                  449 	.db 0x0a
+   01D9 0A                  450 	.db 0x0a
+   01DA 42 65 67 69 6E 20   451 	.ascii "Begin Test 4:"
+        54 65 73 74 20 34
+        3A
+   01E7 0A                  452 	.db 0x0a
+   01E8 20 20 20 20 48 69   453 	.ascii "    Hi there!!"
+        20 74 68 65 72 65
+        21 21
+   01F6 0A                  454 	.db 0x0a
+   01F7 00                  455 	.db 0x00
+   01F8                     456 _qbf:
+   01F8 54 68 65 20 71 75   457 	.ascii "The quick brown fox jumps over the lazy dog."
+        69 63 6B 20 62 72
+        6F 77 6E 20 66 6F
+        78 20 6A 75 6D 70
+        73 20 6F 76 65 72
+        20 74 68 65 20 6C
+        61 7A 79 20 64 6F
+        67 2E
+   0224 0A                  458 	.db 0x0a
+   0225 00                  459 	.db 0x00
+   0226                     460 _ptype:
+   0226r40r02               461 	.dw __str_4
+   0228r44r02               462 	.dw __str_5
+   022Ar53r02               463 	.dw __str_6
+   022Cr66r02               464 	.dw __str_7
+   022E                     465 ___str_0:
+   022E 25 73               466 	.ascii "%s"
+   0230 0A                  467 	.db 0x0a
+   0231 00                  468 	.db 0x00
+   0232                     469 ___str_1:
+   0232 48 65 6C 6C 6F 20   470 	.ascii "Hello World!"
+        57 6F 72 6C 64 21
+   023E 0A                  471 	.db 0x0a
+   023F 00                  472 	.db 0x00
+   0240                     473 __str_4:
+   0240 5A 38 30            474 	.ascii "Z80"
+   0243 00                  475 	.db 0x00
+   0244                     476 __str_5:
+   0244 5A 38 30 31 38 30   477 	.ascii "Z80180 vintage"
+        20 76 69 6E 74 61
+        67 65
+   0252 00                  478 	.db 0x00
+   0253                     479 __str_6:
+   0253 5A 31 38 30 20 53   480 	.ascii "Z180 SL1960 retard"
+        4C 31 39 36 30 20
+        72 65 74 61 72 64
+   0265 00                  481 	.db 0x00
+   0266                     482 __str_7:
+   0266 5A 31 38 30 20 61   483 	.ascii "Z180 advanced S-class"
+        64 76 61 6E 63 65
+        64 20 53 2D 63 6C
+        61 73 73
+   027B 00                  484 	.db 0x00
+                            485 	.area _CODE
+                            486 	.area _INITIALIZER
+                            487 	.area _CABS (ABS)

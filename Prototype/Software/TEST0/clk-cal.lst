@@ -1,0 +1,454 @@
+                     0000     1 DEBUG=0
+                              2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              3 ; clk-cal.s -- Z180 SBC Mark IV  Clock-Calendar-NVRAM module
+                              4 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              5 ;
+                              6 ;   This version is for assembly by  SDCC 3.0.0
+                              7 ;
+                              8 ; Copyright (C) 2013 John R. Coffman.  All rights reserved.
+                              9 ; Provided for hobbyist use on the N8VEM SBC Mark IV board.
+                             10 ;
+                             11 ; This program is free software: you can redistribute it and/or modify
+                             12 ; it under the terms of the GNU General Public License as published by
+                             13 ; the Free Software Foundation, either version 3 of the License, or
+                             14 ; (at your option) any later version.
+                             15 ;
+                             16 ; This program is distributed in the hope that it will be useful,
+                             17 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             18 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             19 ; GNU General Public License for more details.
+                             20 ;
+                             21 ; You should have received a copy of the GNU General Public License
+                             22 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             23 ;
+                             24 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             25 .include "mark4.inc"
+                              1 ;/*
+                              2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              3 ;  mark4.inc -- Z180 SBC Mark IV device definitions
+                              4 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              5 ;
+                              6 ;   Copyright (C) 2013,2014 John R. Coffman.  All rights reserved.
+                              7 ;   Provided for hobbyist use on the Z180 SBC Mark IV board.
+                              8 ;
+                              9 ; This program is free software: you can redistribute it and/or modify
+                             10 ; it under the terms of the GNU General Public License as published by
+                             11 ; the Free Software Foundation, either version 3 of the License, or
+                             12 ; (at your option) any later version.
+                             13 ;
+                             14 ; This program is distributed in the hope that it will be useful,
+                             15 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             16 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             17 ; GNU General Public License for more details.
+                             18 ;
+                             19 ; You should have received a copy of the GNU General Public License
+                             20 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             21 ;
+                             22 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             23 
+                     0080    24 dev_MarkIV_board =	0x80		; jumper settings (P10)
+                             25 
+                     0080    26 dev_ide		=	dev_MarkIV_board + 0x0
+                     0088    27 dev_ide1	=	dev_MarkIV_board + 0x8	; +6 or +7 required
+                             28 
+                     0088    29 dev_xmem	=	dev_MarkIV_board + 8
+                     0089    30 dev_sd		=	dev_MarkIV_board + 0x9
+                     008A    31 dev_rtc		=	dev_MarkIV_board + 0xA
+                             32 
+                             33 ; end mark4.s
+                     0000    34 .if 0	     			; */
+                             35 #define  dev_MarkIV_board  0x80
+                             36 
+                             37 #define dev_ide  dev_MarkIV_board+0
+                             38 #define dev_ide1 dev_MarkIV_board+8
+                             39 #define dev_xmem dev_MarkIV_board+8
+                             40 #define dev_sd   dev_MarkIV_board+9
+                             41 #define dev_rtc  dev_MarkIV_board+10
+                             42 				/*
+                             43 .endif
+                             44 
+                             45 ; end  mark4.inc    */
+                             26 
+                             27 	.module clk_cal
+                             28 	.z80
+                             29 
+                             30 
+                             31 	.globl	_RTC_dev
+                             32 	.area	_CODE
+   0000 8A                   33 _RTC_dev:	.db	dev_rtc
+                             34 
+                             35 
+                     0081    36 READ_CMD        =       0x81
+                     0080    37 WRITE_CMD       =       0x80
+                             38 
+                             39 ; bits in the 'dev_rtc' command register
+                             40 ;
+                     0010    41 nRST	=	0x10		; ~RST bit
+                     0020    42 RW	=	0x20		; Read/~Write direction
+                     0040    43 CLK	=	0x40		; Clock
+                     0080    44 DataOut	=	0x80		; Data Out
+                     0001    45 DataIn	=	0x01		; Data In
+                             46 
+                             47 	.area	_CODE
+   0001                      48 reset_on:
+   0001 3Ar00r00      [13]   49 	ld	a,(_RTC_dev)	; let 'mark4.c' specify this
+                     0000    50 .if DEBUG
+                             51 	cp	a,#0x70
+                             52 	jr	z,ro2
+                             53 	lites	0x69
+                             54 	stop
+                             55 ro2:
+                             56 .endif
+   0004 4F            [ 4]   57 	ld	c,a		; use device code in C register
+                             58 
+   0005 16 20         [ 7]   59 	ld	d,#(RW)		; set READ
+   0007 3E 2F         [ 7]   60 	ld	a,#~(nRST+CLK+DataOut)	; set RESET, clear CLK, clear DOut
+   0009                      61 and_lat:
+   0009 A2            [ 4]   62 	and	a,d		; AND bits
+   000A                      63 out_lat:
+   000A ED 79         [12]   64 	out	(c),a	; output to latch
+   000C 57            [ 4]   65 delay:	ld	d,a		; save latch state in D
+                             66 	.globl	_delay2
+   000D CDr00r00      [17]   67 	call	_delay2
+   0010 C9            [10]   68 	ret
+                             69 
+                             70 
+                             71 
+   0011                      72 reset_off:
+   0011 3E 10         [ 7]   73 	ld	a,#(nRST)	; deassert RESET
+   0013                      74 or_lat:
+   0013 B2            [ 4]   75 	or	a,d		; OR values
+   0014 ED 79         [12]   76 	out	(c),a	; output to latch
+   0016 18 F4         [12]   77 	jr	delay		; take a little more time
+                             78 
+                             79 
+                             80 ; byte_out
+                             81 ;
+                             82 ;  Call with:
+                             83 ;	latch status in D
+                             84 ;	byte to put out in E
+                             85 
+   0018                      86 byte_out:
+   0018 06 08         [ 7]   87 	ld	b,#8		; count 8 bits
+   001A                      88 byte2:
+   001A 3E 9F         [ 7]   89 	ld	a,#~(RW+CLK)	; clear CLK, set WRITE
+   001C A2            [ 4]   90 	and	a,d		; **
+   001D 87            [ 4]   91 	add	a,a		; shift by 1
+   001E CB 0B         [ 8]   92 	rrc	e		; low bit to Carry
+   0020 1F            [ 4]   93 	rra			; hi bit of A is DataOut
+   0021 CDr0Ar00      [17]   94 	call	out_lat		; output
+   0024 3E 40         [ 7]   95 	ld	a,#CLK		; set CLK
+   0026 CDr13r00      [17]   96 	call	or_lat		; put out the bit
+   0029 10 EF         [13]   97 	djnz	byte2		; loop through 8 bits
+                             98 
+   002B C9            [10]   99 	ret			; byte has been put out
+                            100 ; ends with CLK high
+                            101 
+                            102 
+                            103 ; byte_in
+                            104 ;
+                            105 ;  Call with:
+                            106 ;	latch status in D
+                            107 ;
+                            108 ;  Return with:
+                            109 ;	byte read in E
+                            110 ;	latch status in D
+                            111 
+   002C                     112 byte_in:
+   002C 06 08         [ 7]  113 	ld	b,#8		; count 8 bits
+   002E                     114 byte4:
+   002E 3E BF         [ 7]  115 	ld	a,#~CLK		; clear CLK
+   0030 A2            [ 4]  116 	and	a,d
+   0031 16 30         [ 7]  117 	ld	d,#(nRST+RW)	; clear nRST, set READ
+   0033 CDr13r00      [17]  118 	call	or_lat		;
+   0036 00            [ 4]  119 	nop
+                            120 
+   0037 ED 78         [12]  121 	in	a,(c)	; read a bit into Data_0
+   0039 1F            [ 4]  122 	rra
+   003A CB 1B         [ 8]  123 	rr	e		; low bit of A is now hi bit of E
+                            124 
+   003C 3E 40         [ 7]  125 	ld	a,#CLK		; set CLK
+   003E CDr13r00      [17]  126 	call	or_lat
+   0041 10 EB         [13]  127 	djnz	byte4
+                            128 
+   0043 C9            [10]  129 	ret			; return byte in E
+                            130 ; ends with CLK high
+                            131 
+                            132 
+                            133 
+                            134 
+                            135 
+                            136 
+                            137 ; /* void rtc_set_loc(byte reg, byte value); */
+                            138 
+                            139 ; _rtc_set_loc(byte reg_number, byte value)
+                            140 ;
+                            141 ;   Call with:
+                            142 ;       arg1    (byte)number         (needs to be shifted by 1)
+                            143 ;               the address contains the clock/ram bit;
+                            144 ;               both will be shifted to the correct position
+                            145 ;	arg2	value to store in location
+                            146 ;
+                            147 ;   Return with
+                            148 ;	nothing
+                            149 ;
+   0044                     150 _rtc_set_loc::
+   0044 D5            [11]  151 	push	de
+   0045 C5            [11]  152 	push	bc
+                            153 
+   0046 CDr01r00      [17]  154 	call	reset_on
+   0049 CDr11r00      [17]  155 	call	reset_off
+                            156 
+   004C 21 06 00      [10]  157 	ld	hl,#2+4		; get arg1 offset
+   004F 39            [11]  158 	add	hl,sp
+   0050 7E            [ 7]  159 	ld	a,(hl)		; get byte number (arg1)
+   0051 23            [ 6]  160 	inc	hl
+   0052 E6 3F         [ 7]  161 	and	a,#0x3F		; insurance, bit 0x20 is RAM/CLK bit
+   0054 87            [ 4]  162 	add	a,a		; shift by 1
+   0055 F6 80         [ 7]  163 	or	a,#WRITE_CMD	;
+   0057 5F            [ 4]  164 	ld	e,a		; command byte to E register
+   0058 CDr18r00      [17]  165 	call	byte_out	; put out the command byte
+                            166 
+   005B 5E            [ 7]  167 	ld	e,(hl)		; byte to put out in E
+   005C CDr18r00      [17]  168 	call	byte_out	; put out the data byte
+                            169 
+   005F CDr01r00      [17]  170 	call	reset_on	; end of operation
+                            171 
+   0062 C1            [10]  172 	pop	bc
+   0063 D1            [10]  173 	pop	de
+   0064 C9            [10]  174 	ret
+                            175 
+                            176 
+                            177 ; /* byte rtc_get_loc(byte address); */
+                            178 
+                            179 ; _rtc_get_loc(byte reg_number)
+                            180 ;
+                            181 ;   Call with:
+                            182 ;       arg1    (byte)number         (needs to be shifted by 1)
+                            183 ;               the address contains the clock/ram bit;
+                            184 ;               both will be shifted to the correct position
+                            185 ;
+                            186 ;   Return with
+                            187 ;       L reg   data value read in
+                            188 ;
+   0065                     189 _rtc_get_loc::
+   0065 D5            [11]  190 	push	de
+   0066 C5            [11]  191 	push	bc
+                            192 
+   0067 CDr01r00      [17]  193 	call	reset_on
+   006A CDr11r00      [17]  194 	call	reset_off
+                            195 ; delay 4 usec here -- stream below is big enough
+   006D 21 06 00      [10]  196 	ld	hl,#2+4		; arg offset
+   0070 39            [11]  197 	add	hl,sp
+   0071 7E            [ 7]  198 	ld	a,(hl)		; get byte address
+   0072 E6 3F         [ 7]  199 	and	a,#0x3F		; insurance, bit 0x20 is RAM/CLK bit
+   0074 87            [ 4]  200 	add	a,a		; shift by 1
+   0075 F6 81         [ 7]  201 	or	a,#READ_CMD	;
+   0077 5F            [ 4]  202 	ld	e,a		; command to put out in C
+   0078 CDr18r00      [17]  203 	call	byte_out	; put out the command byte
+                            204 
+   007B CDr2Cr00      [17]  205 	call	byte_in		; get byte in C
+   007E CDr01r00      [17]  206 	call	reset_on	; re-assert RESET
+                            207 
+   0081 6B            [ 4]  208 	ld	l,e		; return value in L
+   0082 26 00         [ 7]  209 	ld	h,#0		; return as 'int'
+   0084 C1            [10]  210 	pop	bc
+   0085 D1            [10]  211 	pop	de
+   0086 C9            [10]  212 	ret
+                            213 
+                            214 
+                            215 
+                            216 ; C-callable
+                            217 ;	byte get_nvram(byte nvram[]);
+                            218 ;
+                            219 ;	Return	== 0 if checksum valid
+                            220 ;		!= 0 if checksum invalid
+                            221 ;
+   0087                     222 _get_nvram::
+   0087 C5            [11]  223 	push	bc
+   0088 D5            [11]  224 	push	de
+                            225 
+   0089 CDr01r00      [17]  226 	call	reset_on
+   008C CDr11r00      [17]  227 	call	reset_off
+   008F 21 06 00      [10]  228 	ld	hl,#6		; address of argument offset
+   0092 39            [11]  229 	add	hl,sp		;
+   0093 5E            [ 7]  230 	ld	e,(hl)		; low part of address
+   0094 23            [ 6]  231 	inc	hl
+   0095 56            [ 7]  232 	ld	d,(hl)		; 
+   0096 EB            [ 4]  233 	ex	de,hl		; HL is address of array
+                            234 
+   0097 1E FF         [ 7]  235 	ld	e,#0xFF		; read all of NVRAM
+   0099 CDr18r00      [17]  236 	call	byte_out
+   009C 06 1F         [ 7]  237 	ld	b,#31		; count 31 bytes
+   009E                     238 nv1:
+   009E C5            [11]  239 	push	bc
+   009F CDr2Cr00      [17]  240 	call	byte_in		; retrieve a byte
+   00A2 73            [ 7]  241 	ld	(hl),e		; save it
+   00A3 23            [ 6]  242 	inc	hl
+   00A4 C1            [10]  243 	pop	bc
+   00A5 05            [ 4]  244 	dec	b
+   00A6 20 F6         [12]  245 	jr	nz,nv1		; loop back for 31 bytes
+                            246 
+   00A8 CDr01r00      [17]  247 	call	reset_on	; 
+                            248 
+                     0000   249 .if 0
+                            250 	ld	b,#31		; B=31
+                            251 	xor	a,a		; clear A
+                            252 nv2:
+                            253 	dec	hl		; now sum the array backwards
+                            254 	add	(hl)		; one's complement add
+                            255 	adc	#0		;  end around carry for one's complement
+                            256 	djnz	nv2	
+                            257 
+                            258 	inc	a		; convert -0 to +0
+                            259 	jr	z,nv3
+                            260 	dec	a
+                            261 nv3:
+                            262 	ld	l,a		; return byte
+                            263 .endif
+                            264 
+   00AB D1            [10]  265 	pop	de		; restore
+   00AC C1            [10]  266 	pop	bc
+   00AD C9            [10]  267 	ret			; return
+                            268 
+                            269 
+                            270 
+                            271 
+                            272 ; C-callable
+                            273 ;	void put_nvram(byte nvram[]);
+                            274 ;
+                            275 ; return nothing
+                            276 
+   00AE                     277 _put_nvram::
+   00AE C5            [11]  278 	push	bc
+   00AF D5            [11]  279 	push	de
+                            280 
+   00B0 21 06 00      [10]  281 	ld	hl,#6		; offset of argument
+   00B3 39            [11]  282 	add	hl,sp		;
+   00B4 5E            [ 7]  283 	ld	e,(hl)		; low part of address
+   00B5 23            [ 6]  284 	inc	hl
+   00B6 56            [ 7]  285 	ld	d,(hl)		; DE is address of array
+   00B7 EB            [ 4]  286 	ex	de,hl
+   00B8 E5            [11]  287 	push	hl		; save for later
+                            288 
+                     0000   289 .if 0
+                            290 	ld	b,#30		; B=30
+                            291 	xor	a,a
+                            292 nv5:
+                            293 	add	(hl)		; one's complement addition
+                            294 	adc	#0		; end around carry
+                            295 	inc	hl
+                            296 	djnz	nv5		; sum 30 bytes
+                            297 
+                            298 	xor	a,#0xFF		; one's complement negation
+                            299 	ld	(hl),a		; store checksum
+                            300 .endif
+                            301 
+   00B9 CDr01r00      [17]  302 	call	reset_on	; starts to use D register
+   00BC CDr11r00      [17]  303 	call	reset_off
+                            304 	
+   00BF E1            [10]  305 	pop	hl		; restore address of array
+   00C0 1E FE         [ 7]  306 	ld	e,#0xFE		; write all of NVRAM
+   00C2 CDr18r00      [17]  307 	call	byte_out
+   00C5 06 1F         [ 7]  308 	ld	b,#31		; count 31 bytes
+   00C7                     309 nv6:
+   00C7 C5            [11]  310 	push	bc
+   00C8 5E            [ 7]  311 	ld	e,(hl)		; byte to store to NVRAM
+   00C9 23            [ 6]  312 	inc	hl
+   00CA CDr18r00      [17]  313 	call	byte_out	; store a byte
+   00CD C1            [10]  314 	pop	bc
+   00CE 05            [ 4]  315 	dec	b
+   00CF 20 F6         [12]  316 	jr	nz,nv6		; loop back for 31 bytes
+                            317 
+   00D1 CDr01r00      [17]  318 	call	reset_on	; 
+                            319 
+   00D4 D1            [10]  320 	pop	de		; restore
+   00D5 C1            [10]  321 	pop	bc
+   00D6 C9            [10]  322 	ret			; return
+                            323 
+                            324 
+                            325 
+                            326 
+                            327 ; C-callable
+                            328 ;	void get_clock(byte clock[]);
+                            329 ;
+   00D7                     330 _get_clock::
+   00D7 C5            [11]  331 	push	bc
+   00D8 D5            [11]  332 	push	de
+                            333 
+   00D9 CDr01r00      [17]  334 	call	reset_on
+   00DC CDr11r00      [17]  335 	call	reset_off
+   00DF 21 06 00      [10]  336 	ld	hl,#6		; address of argument offset
+   00E2 39            [11]  337 	add	hl,sp		;
+   00E3 5E            [ 7]  338 	ld	e,(hl)		; low part of address
+   00E4 23            [ 6]  339 	inc	hl
+   00E5 56            [ 7]  340 	ld	d,(hl)		; 
+   00E6 EB            [ 4]  341 	ex	de,hl		; HL is address of array
+                            342 
+   00E7 1E BF         [ 7]  343 	ld	e,#0xBF		; read all of CLOCK
+   00E9 CDr18r00      [17]  344 	call	byte_out
+   00EC 06 08         [ 7]  345 	ld	b,#8		; count 8 bytes
+   00EE                     346 ck1:
+   00EE C5            [11]  347 	push	bc
+   00EF CDr2Cr00      [17]  348 	call	byte_in		; retrieve a byte
+   00F2 73            [ 7]  349 	ld	(hl),e		; save it
+   00F3 23            [ 6]  350 	inc	hl
+   00F4 C1            [10]  351 	pop	bc
+   00F5 05            [ 4]  352 	dec	b
+   00F6 20 F6         [12]  353 	jr	nz,ck1		; loop back for 31 bytes
+                            354 
+   00F8 CDr01r00      [17]  355 	call	reset_on	; 
+                            356 
+   00FB D1            [10]  357 	pop	de		; restore
+   00FC C1            [10]  358 	pop	bc
+   00FD C9            [10]  359 	ret			; return
+                            360 
+                            361 
+                            362 
+                            363 
+                            364 ; C-callable
+                            365 ;	void put_clock(byte clock[]);
+                            366 ;
+                            367 ; return nothing
+                            368 
+   00FE                     369 _put_clock::
+   00FE C5            [11]  370 	push	bc
+   00FF D5            [11]  371 	push	de
+                            372 
+   0100 21 06 00      [10]  373 	ld	hl,#6		; offset of argument
+   0103 39            [11]  374 	add	hl,sp		;
+   0104 5E            [ 7]  375 	ld	e,(hl)		; low part of address
+   0105 23            [ 6]  376 	inc	hl
+   0106 56            [ 7]  377 	ld	d,(hl)		; DE is address of array
+   0107 EB            [ 4]  378 	ex	de,hl
+                            379 
+   0108 CDr01r00      [17]  380 	call	reset_on	; starts to use D register
+   010B CDr11r00      [17]  381 	call	reset_off
+                            382 	
+   010E 1E BE         [ 7]  383 	ld	e,#0xBE		; write all of CLOCK
+   0110 CDr18r00      [17]  384 	call	byte_out
+   0113 06 08         [ 7]  385 	ld	b,#8		; count 8 bytes
+   0115                     386 ck6:
+   0115 C5            [11]  387 	push	bc
+   0116 5E            [ 7]  388 	ld	e,(hl)		; byte to store to NVRAM
+   0117 23            [ 6]  389 	inc	hl
+   0118 CDr18r00      [17]  390 	call	byte_out	; store a byte
+   011B C1            [10]  391 	pop	bc
+   011C 05            [ 4]  392 	dec	b
+   011D 20 F6         [12]  393 	jr	nz,ck6		; loop back for 31 bytes
+                            394 
+   011F CDr01r00      [17]  395 	call	reset_on	; 
+                            396 
+   0122 D1            [10]  397 	pop	de		; restore
+   0123 C1            [10]  398 	pop	bc
+   0124 C9            [10]  399 	ret			; return
+                            400 
+                            401 
+                            402 
+                            403 
+                            404 
+                            405 
+                            406 
+                            407 
+                            408 
+                            409 

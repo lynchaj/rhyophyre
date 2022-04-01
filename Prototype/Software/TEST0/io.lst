@@ -1,0 +1,38 @@
+                              1 ; io.s -- INP and OUTP -- input and output operations
+                              2 ;
+                              3 ;
+                              4 
+                              5 	.globl	_outp
+                              6 ;	.globl	outp
+                              7 ;
+                              8 ;   void outp(byte port, byte data);
+                              9 ;
+   0000                      10 _outp::
+   0000 E1            [10]   11 	pop	hl		; get return address
+   0001 C1            [10]   12 	pop	bc		; get data:port in B:C
+   0002 C5            [11]   13 	push	bc		; restore the stack
+                             14 
+   0003 78            [ 4]   15 	ld	a,b		; data to A
+   0004 06 00         [ 7]   16 	ld	b,#0		; just in case we address Z180
+   0006 ED 79         [12]   17 	out	(c),a		; data out to world
+   0008 E9            [ 4]   18 	jp	(hl)		; return thru register
+                             19 
+                             20 
+                             21 	.globl	_inp	
+                             22 ;	.globl	inp
+                             23 ;	
+                             24 ;   int inp(byte port);
+                             25 ;
+   0009                      26 _inp::
+   0009 E1            [10]   27 	pop	hl		; get return address
+   000A C1            [10]   28 	pop	bc		; retrieve byte in C (port address)
+   000B C5            [11]   29 	push	bc		; restore stack
+   000C E5            [11]   30 	push	hl		; put return address back
+   000D 06 00         [ 7]   31 	ld	b,#0		; may address Z180 port
+   000F ED 68         [12]   32 	in	l,(c)		; input the byte
+   0011 60            [ 4]   33 	ld	h,b		; make it an integer
+   0012 C9            [10]   34 	ret
+                             35 
+                             36 
+                             37 
+                             38 

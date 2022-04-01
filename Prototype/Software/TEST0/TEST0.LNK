@@ -1,0 +1,20 @@
+-mjx
+-i test0
+-b _CODE = 0x0000
+-b _DATA = 0x8000
+-k /opt/local/share/sdcc/lib/z80
+-l z80
+ycrt0.rel
+test0.rel
+cprintf.rel
+delay.rel
+sio0.rel
+literhyo.rel
+io.rel
+cpu.rel
+echo.rel
+clk-cal.rel
+nvtest.rel
+
+-e
+

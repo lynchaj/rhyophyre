@@ -1,0 +1,68 @@
+                              1 ; literhyo
+                              2 ;
+                              3 	.module	literhyo
+                              4 .include "rhyophyre.inc"
+                              1 ;/*
+                              2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              3 ;  rhyophyre.inc -- Z180 SBC RHYOPHYRE device definitions
+                              4 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              5 ;
+                              6 ;   Copyright (C) 2013,2014 John R. Coffman.  All rights reserved.
+                              7 ;   Provided for hobbyist use on the Z180 SBC Mark IV board.
+                              8 ;
+                              9 ; This program is free software: you can redistribute it and/or modify
+                             10 ; it under the terms of the GNU General Public License as published by
+                             11 ; the Free Software Foundation, either version 3 of the License, or
+                             12 ; (at your option) any later version.
+                             13 ;
+                             14 ; This program is distributed in the hope that it will be useful,
+                             15 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             16 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             17 ; GNU General Public License for more details.
+                             18 ;
+                             19 ; You should have received a copy of the GNU General Public License
+                             20 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             21 ;
+                             22 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             23 
+                     0020    24 ACR_STATUS = 0x20
+                             25 
+                     0080    26 dev_Rhyophyre_board = 0x80
+                             27 
+                     0080    28 dev_acr  = dev_Rhyophyre_board + 0x0
+                     0084    29 dev_rtc  = dev_Rhyophyre_board + 0x4
+                             30 
+                             31 ; items below are fake for now to keep the code compiling
+                             32 
+                     0080    33 dev_ide		=	dev_Rhyophyre_board + 0x0
+                     0088    34 dev_ide1	=	dev_Rhyophyre_board + 0x8	; +6 or +7 required
+                             35 
+                     0088    36 dev_xmem	=	dev_Rhyophyre_board + 8
+                     0089    37 dev_sd		=	dev_Rhyophyre_board + 0x9
+                     008A    38 dev_rtc		=	dev_Rhyophyre_board + 0xA
+                             39 
+                             40 ; end mark4.s
+                     0000    41 .if 0	     			; */
+                             42 
+                             43 #define ACR_STATUS 0x20
+                             44 
+                             45 #define  dev_Rhyophyre_board 0x80
+                             46 
+                             47 #define  dev_acr  dev_Rhyophyre_board + 0
+                             48 #define  dev_rtc  dev_Rhyophyre_board + 4
+                             49 				/*
+                             50 .endif
+                             51 
+                             52 ; end  mark4.inc    */
+                              5 
+                              6 	.area	_CODE
+                              7 
+   0000                       8 _lite_on::
+   0000 3E 20         [ 7]    9 	ld	a,#ACR_STATUS ; set the STATUS bit in the Aux Control Reg
+   0002 D3 80         [11]   10 	out	(dev_acr),a
+   0004 C9            [10]   11 	ret
+                             12 
+   0005                      13 _lite_off::
+   0005 3E 00         [ 7]   14 	ld	a,#0x00      ; clear the STATUS bit
+   0007 D3 80         [11]   15 	out	(dev_acr),a
+   0009 C9            [10]   16 	ret
