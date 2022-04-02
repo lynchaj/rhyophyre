@@ -15,6 +15,7 @@ gdc_read: 		.EQU	091H
 ramdac_latch: 		.EQU	094H
 ramdac_base: 		.EQU	098H
 
+
 ramdac_address_wr:	.EQU (ramdac_base+0)
 ramdac_address_rd:	.EQU (ramdac_base+3)
 ramdac_palette_ram:	.EQU (ramdac_base+1)
@@ -67,10 +68,15 @@ GDC_CLEAR	.EQU		2
 	CALL	0005H 		;
 
 	CALL	ramdac_init	;
-	LD 	A,0		;
+	LD 	A,0FH		;
 	CALL 	ramdac_set_read_mask	;    ramdac_set_read_mask(0x0F)
 	LD	A,0
 	CALL 	ramdac_overlay	;   ramdac_overlay(0)
+
+	; ********* RESET
+	LD	A,RESET		; DO RESET
+	CALL	OUTA		; SEND COMMAND
+	CALL 	CLEAR_SCREEN
 
 	LD	A,1
 	CALL	gdc_init	;
@@ -85,8 +91,26 @@ GDC_CLEAR	.EQU		2
 
     	CALL 	gchar_test	;
 
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,CLPATTERN
+	LD 	HL,0000
+	LD 	A,GDC_REPLACE
+	LD 	C,0
+	CALL 	gchar_print
 
-;	CALL	INIT7220	;
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,CHPATTERN
+	LD 	HL,0003
+	LD 	A,GDC_REPLACE
+	LD 	C,1
+	CALL 	gchar_print
+
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,CLPATTERN
+	LD 	HL,0018
+	LD 	A,GDC_REPLACE
+	LD 	C,2
+	CALL 	gchar_print
 
 	LD	DE,MSG_END	;
 	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
@@ -95,16 +119,17 @@ GDC_CLEAR	.EQU		2
 	LD	C,00H		; CP/M SYSTEM RESET CALL
 	CALL	0005H 		; RETURN TO PROMPT
 
-;SYNCP: 	.DB		012H,026H,045H,000H,002H,00AH,0E0H,085H
 SYNCP: 	.DB	012H,026H,044H,004H,002H,00AH,0E0H,085H  ;;VERIFY THESE NUMBERS
 CCHARP:	.DB	000H,000H,000H
 PITCHP:	.DB	028H   ;;VERIFY THESE NUMBERS
-PRAMP:	.DB	000H,000H,000H,0E0H,001H,000H,000H
+PRAMP:	.DB	000H,000H,000H,01EH		;000H,000H,000H,0E0H,001H,000H,000H
 ZOOMP:	.DB	000H   VERIFY THESE NUMBERS
 CURSP:	.DB	000H,000H,000H
 PATTERN:	.DW	0FFFFH
 
 CHPATTERN: .DB	0ffH, 09fH, 087H, 08bH,093H, 0a3H, 083H, 0ffH
+CLPATTERN: .DB	0ffH, 0ffH, 0ffH, 0ffH,0ffH, 0ffH, 0ffH, 0ffH
+ZRPATTERN: .DB	0H, 0H, 0H, 0H,0H, 0H, 0H, 0H
 
 
 default_palette:
@@ -186,12 +211,35 @@ ramdac_set_overlay_color:
 	PUSH	AF		; STORE REGISTERS
 	LD 	A,C
 	OUT	(ramdac_overlay_wr),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTC
+;	POP 	HL
+;	call 	delay
 	LD 	A,H
 	OUT	(ramdac_overlay_ram),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
 	LD 	A,L
 	OUT	(ramdac_overlay_ram),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
 	LD 	A,B
 	OUT	(ramdac_overlay_ram),A
+;	PUSH 	HL
+	;call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
+;	PUSH 	HL
+;	call 	PRINTCRLF
+;	POP 	HL
 	POP	AF		; RESTORE
 	RET
 
@@ -200,12 +248,35 @@ ramdac_set_palette_color:
  	PUSH	AF		; STORE REGISTERS
 	LD 	A,C
 	OUT	(ramdac_address_wr),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTC
+;	POP 	HL
+;	call 	delay
 	LD 	A,H
 	OUT	(ramdac_palette_ram),A
+;	PUSH 	HL
+	;call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
 	LD 	A,L
 	OUT	(ramdac_palette_ram),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
 	LD 	A,B
 	OUT	(ramdac_palette_ram),A
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
+;	call 	delay
+;	PUSH 	HL
+;	call 	PRINTCRLF
+;	POP 	HL
 	POP	AF		; RESTORE
 	RET
 
@@ -228,6 +299,13 @@ gdc_init:
 	LD	A,VSYNC		; DO VSYNC
 	CALL	OUTA		; SEND COMMAND
 	CALL	PRINTCRLF
+	; ********* CCHAR
+      	LD	A,CCHAR		; DO CCHAR
+	CALL	OUTA		; SEND COMMAND
+	LD	HL,CCHARP	; PARM TABLE
+	LD	C,03H		; NUMBER PARAMS
+	CALL	OUTC
+	CALL	PRINTCRLF
 	; ********* PITCH
       	LD	A,PITCH		; DO PITCH
 	CALL	OUTA		; SEND COMMAND
@@ -237,14 +315,14 @@ gdc_init:
 	CALL	PRINTCRLF
 	; ********* PRAM 1
 	LD	HL,PRAMP	; PARM TABLE
-	LD	C,7		; NUMBER PARAMS
+	LD	C,4		; NUMBER PARAMS
 	LD 	A,0		; START ADDRESS
     	CALL	gdc_pram	; graphic area 1
 	CALL	PRINTCRLF
 	; ********* PRAM 2
     	LD	HL,PRAMP	; PARM TABLE
-	LD	C,7		; NUMBER PARAMS
-	LD 	A,7		; START ADDRESS
+	LD	C,4		; NUMBER PARAMS
+	LD 	A,4		; START ADDRESS
     	CALL	gdc_pram	; graphic area 2
 	CALL	PRINTCRLF
 	; ********* PATTERN
@@ -310,57 +388,38 @@ gdc_pram:
 	CALL	OUTC
 	RET
 
-INIT7220:
-	; ********* RESET
-	LD	A,RESET		; DO RESET
-	CALL	OUTA		; SEND COMMAND
-	; ********* SYNC
-	LD	A,SYNC		; DO SYNC
-	CALL	OUTA		; SEND COMMAND
-	LD	C,8		; NUMBER PARMS
-	LD	HL,SYNCP	; PARM TABLE
-	CALL	OUTC		; SEND PARMS
-	; ********* VSYNC
-	LD	A,VSYNC		; DO VSYNC
-	CALL	OUTA		; SEND COMMAND
-	; ********* CCHAR
-      	LD	A,CCHAR		; DO CCHAR
-	CALL	OUTA		; SEND COMMAND
-	LD	HL,CCHARP	; PARM TABLE
-	LD	C,03H		; NUMBER PARAMS
-	CALL	OUTC
-	; ********* PITCH
-      	LD	A,PITCH		; DO PITCH
-	CALL	OUTA		; SEND COMMAND
-	LD	HL,PITCHP	; PARM TABLE
-	LD	C,01H		; NUMBER PARAMS
-	CALL	OUTC
-	; ********* PRAM
-      	LD	A,PRAM		; DO PRAM
-	CALL	OUTA		; SEND COMMAND
-	LD	HL,PRAMP	; PARM TABLE
-	LD	C,10H		; NUMBER PARAMS
-	CALL	OUTC
-	; ********* ZOOM
-      	LD	A,ZOOM		; DO ZOOM
-	CALL	OUTA		; SEND COMMAND
-	LD	HL,ZOOMP	; PARM TABLE
-	LD	C,01H		; NUMBER PARAMS
-	CALL	OUTC
-	; ********* CURS
-      	LD	A,CURS		; DO CURS
-	CALL	OUTA		; SEND COMMAND
-	LD	HL,CURSP	; PARM TABLE
-	LD	C,03H		; NUMBER PARAMS
-	CALL	OUTC
-	; ********* START
-      	LD	A,START		; DO START
-	CALL	OUTA		; SEND COMMAND
-
+; NOT EFFICIENT AT ALL, COULD BE 8X LESS
+CLEAR_SCREEN:
+	LD 	HL,0000
+CLEAR_SCREEN_A:
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,ZRPATTERN
+	LD 	A,GDC_REPLACE
+	LD 	C,0
+	CALL 	gchar_print
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,ZRPATTERN
+	LD 	A,GDC_REPLACE
+	LD 	C,1
+	CALL 	gchar_print
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,ZRPATTERN
+	LD 	A,GDC_REPLACE
+	LD 	C,2
+	CALL 	gchar_print
+	; parameter (character,location,mode,color) in IX,HL,A,C
+	LD 	IX,ZRPATTERN
+	LD 	A,GDC_REPLACE
+	LD 	C,3
+	CALL 	gchar_print
+	INC 	HL
+	LD 	A,H
+	CP 	0FFH
+	JP 	NZ,CLEAR_SCREEN_A
+CLEAR_SCREEN_DONE:
 	RET
 
 gchar_test:
-
 ;  	 x x x x x x x x
 ;        x     x x x x x
 ;        x         x x x
@@ -371,10 +430,10 @@ gchar_test:
 ;        x x x x x x x x
 
 
-	; ********* ZOOM  	gdc_zoom_draw(2);
+	; ********* ZOOM  	gdc_zoom_draw(3);
       	LD	A,ZOOM		; DO ZOOM
 	CALL	OUTA		; SEND COMMAND
-	LD	A,1
+	LD	A,2
 	CALL	OUTP
 	CALL	PRINTCRLF
 
@@ -390,7 +449,7 @@ gchar_test:
 	CALL 	OUTP
 	LD	A,1
 	CALL 	OUTP
-	LD	A,10
+	LD	A,0
 	CALL 	OUTP
 	CALL	PRINTCRLF
 
@@ -425,12 +484,67 @@ gchar_test:
 	LD	A,1
 	CALL	OUTP
 	CALL	PRINTCRLF
-
-	; ********* START
-;      	LD	A,START		; DO START
-;	CALL	OUTA		; SEND COMMAND
-;	CALL	PRINTCRLF
 	RET
+
+
+; parameter (character,location,mode,color) in IX,HL,A,C
+gchar_print:
+	PUSH 	HL
+	PUSH 	AF
+	PUSH 	BC
+	push 	HL
+	; ********* ZOOM  	gdc_zoom_draw(3);
+      	LD	A,ZOOM		; DO ZOOM
+	CALL	OUTA		; SEND COMMAND
+	LD	A,1
+	CALL	OUTP
+	CALL	PRINTCRLF
+
+	PUSH 	IX
+    	POP 	HL		; PARM TABLE
+	LD	C,8		; NUMBER PARAMS
+	LD 	A,8		; START ADDRESS
+    	CALL	gdc_pram	; graphic area 2
+	CALL	PRINTCRLF
+
+	POP 	HL
+	POP 	BC
+      	LD	A,CURS		; DO CURS
+	CALL	OUTA		; SEND COMMAND
+	LD	A,L
+	CALL 	OUTP
+	LD	A,H
+	CALL 	OUTP
+	LD	A,C
+	CALL 	OUTP
+	CALL	PRINTCRLF
+	POP 	AF
+	; ********* SET MODE
+	CALL 	gdc_mode
+	CALL	PRINTCRLF
+
+
+      	LD	A,04CH		; DO FIGS
+	CALL	OUTA		; SEND COMMAND
+	LD	A,10H
+	CALL 	OUTP
+	LD	A,7
+	LD	C,0
+        CALL	gdc_Dparam	; perp. pix - 1
+	LD	A,8
+	LD	C,0
+        CALL 	gdc_Dparam	; initial dir pix
+	LD	A,8
+	LD	C,0
+        CALL 	gdc_Dparam
+	CALL	PRINTCRLF
+
+      	LD	A,068H		; DO GCHRD
+	CALL	OUTA		; SEND COMMAND
+	CALL	PRINTCRLF
+	POP 	HL
+	RET
+
 
 ; parameter (d,or) in A,C
 gdc_Dparam:
@@ -453,8 +567,8 @@ OUTALOOP:
 	JP	NZ,OUTALOOP	; NO, LOOP
 	POP	AF		; YES, RESTORE GDC COMMAND
 	OUT	(gdc_command),A	; FIFO GDC command
-	call 	HXOUT
-	call 	PRINTC
+;	call 	HXOUT
+;	call 	PRINTC
 	POP 	HL
 	RET
 
@@ -467,8 +581,8 @@ OUTPLOOP:
 	JP	NZ,OUTPLOOP	; NO, LOOP
 	POP	AF		; YES, RESTORE GDC PARAMETER
 	OUT	(gdc_param),A	; FIFO GDC PARAMETER
-	call 	HXOUT
-	call 	PRINTP
+;	call 	HXOUT
+;	call 	PRINTP
 	RET
 
 
@@ -478,10 +592,10 @@ OUTC:
 	JP	NZ,OUTC		; NO,LOOP
 	LD	A,(HL)		; GET GDC PARM
 
-	PUSH 	HL
-	call 	HXOUT
-	call 	PRINTP
-	POP 	HL
+;	PUSH 	HL
+;	call 	HXOUT
+;	call 	PRINTP
+;	POP 	HL
 
 	OUT	(gdc_param),A	; WRITE PARM TO GDC
 	INC	HL		; NEXT PARM
@@ -515,6 +629,16 @@ MSG_GCHAR:
 	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
 	.DB	    END 				      ; LINE TERMINATOR
 
+
+;delay:
+;	push 	af
+;	ld 	a,0
+;delaya:
+;	inc 	A
+;	cp 	200
+;	jp 	nz,delaya
+;	pop 	af
+;	RET
 
 
 ;________________________________________________________________________________________________________________________________
@@ -558,26 +682,26 @@ OUT2:
 
 
 PRINTC:
-	PUSH	AF			; STORE AF
-	LD	A,':'			;
-	CALL	COUT			; SCREEN IT
-	POP	AF			; RESTORE AF
+	;PUSH	AF			; STORE AF
+	;LD	A,':'			;
+	;CALL	COUT			; SCREEN IT
+	;POP	AF			; RESTORE AF
 	RET				; DONE
 PRINTP:
-	PUSH	AF			; STORE AF
-	LD	A,' '			;
-	CALL	COUT			; SCREEN IT
-	POP	AF			; RESTORE AF
+	;PUSH	AF			; STORE AF
+	;LD	A,' '			;
+	;CALL	COUT			; SCREEN IT
+	;POP	AF			; RESTORE AF
 	RET
 
 PRINTCRLF:
-	PUSH	AF			; STORE AF
-	LD	A,10			;
-	CALL	COUT			; SCREEN IT
-	LD	A,13			;
-	CALL	COUT			; SCREEN IT
+;	PUSH	AF			; STORE AF
+	;LD	A,10			;
+	;CALL	COUT			; SCREEN IT
+	;LD	A,13			;
+	;CALL	COUT			; SCREEN IT
 
-	POP	AF			; RESTORE AF
+	;POP	AF			; RESTORE AF
 	RET
 
 

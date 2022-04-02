@@ -1,4 +1,4 @@
-/* c7220.c 
+/* c7220.c
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +61,7 @@ _inp:
     xor ah,ah
     pop dx
     pop bp
-    ret    
+    ret
 #endasm
 
 static
@@ -111,7 +111,7 @@ void gdc_sync_params(void)
         byte VFP;	/* Vert front porch */
         byte ALL;	/* Active Lines low */
         byte ALH : 2;	/* Active Lines high */
-        byte VBP : 6;	/* Vert back porch */        
+        byte VBP : 6;	/* Vert back porch */
     } sync;
     sync.mode = Graphics;	/* mode = 0x12 */
     sync.AW = Xmax/16 - 2;
@@ -128,7 +128,7 @@ void gdc_sync_params(void)
     sync.ALL = Ymax & 255;
     sync.ALH = Ymax >> 8;
     sync.VBP = VBP;
-        
+
     p = &sync.mode;
     for (i=0; i<sizeof(sync); i++) gdc_putp(*p++);
 }
@@ -201,7 +201,7 @@ void gdc_setcursor(word X, word Y)	/* set the graphic cursor position */
 {
     word offset;
     long address;
-    
+
     offset = Y * Ypitch_wds + (X >> 4);
     address = start_address + offset;
 
@@ -253,7 +253,7 @@ void gdc_init(byte enable)
     gdc_pram(0, (byte*)&area, sizeof(area));		/* graphic area 1 */
     gdc_pram(sizeof(area), (byte*)&area, sizeof(area));    /* graphic area 2 */
     gdc_pattern(0xFFFF);
-    
+
     Zoom_Draw = 1;
     gdc_zoom_display(1);
 /*    gdc_curs(); */
@@ -282,7 +282,7 @@ void gdc_hline(int x1, int x2, int y, byte mode)
 {
     int temp;
     word mask, maskf;
-    
+
     if (x1 > x2) {
         temp = x1;
         x1 = x2;
@@ -290,7 +290,7 @@ void gdc_hline(int x1, int x2, int y, byte mode)
     }
     mask = maskf = 0xFFFF;
     gdc_setcursor((word)x1, (word)y);
-    
+
     if ( (temp = x1 % 16) ) {
         mask <<= temp;
         if (x1/16 < x2/16) {
@@ -317,7 +317,7 @@ void gdc_hline(int x1, int x2, int y, byte mode)
         gdc_putp(0xFF);	/* LSB only */
         gdc_putp(0xFF);	/* LSB only */
         mask = 0xFFFF;
-    }    
+    }
     if ( (mask = mask & maskf) != 0xFFFFu) {
         gdc_mask(mask);
         gdc_putc(0x4C);	/* FIGS for WDAT */
@@ -334,7 +334,7 @@ void gdc_line(int x1, int y1, int x2, int y2)
     static const int tran[8] = {0,1,3,2,7,6,4,5};
     byte dir = 0;
 
-    gdc_setcursor((word)x1, (word)y1);    
+    gdc_setcursor((word)x1, (word)y1);
     dx = x2 - x1;
     if (dx < 0) {
         dir |= 4;
@@ -376,7 +376,7 @@ void gdc_fill(int x1, int y1, int x2, int y2, byte color)
     byte mode = Mode;
     int temp;
     int DC, D;
-    
+
     gdc_pram(8, Fill, 8);
     if (!color) gdc_mode(GDC_CLEAR);
     else gdc_mode(GDC_OR);
@@ -391,7 +391,7 @@ void gdc_fill(int x1, int y1, int x2, int y2, byte color)
         y2 = temp;
     }
     gdc_setcursor((word)x1, (word)y1);
-    
+
     gdc_putc(0x4C);	/* FIGS command */
     gdc_putp(0x10);	/* DIR=0, GC=1 */
     DC = x2 - x1;	/* Perp. pix - 1 */
@@ -400,7 +400,7 @@ void gdc_fill(int x1, int y1, int x2, int y2, byte color)
     gdc_Dparam(D, 0);
     gdc_Dparam(D, 0);
     gdc_putc(0x68);	/* GCHRD command */
-    
+
     gdc_mode(mode);
 }
 
@@ -408,7 +408,7 @@ void gdc_fill2(int x1, int y1, int x2, int y2, byte color)
 {
     byte mode = Mode;
     int temp;
-    
+
     gdc_pram(8, Fill, 8);
     if (!color) gdc_mode(GDC_CLEAR);
     else gdc_mode(GDC_OR);
@@ -423,7 +423,7 @@ void gdc_fill2(int x1, int y1, int x2, int y2, byte color)
         y2 = temp;
     }
     for (; y1<=y2; y1++) gdc_line(x1, y1, x2, y1);
-    
+
     gdc_mode(mode);
 }
 
@@ -441,7 +441,7 @@ void gchar_test(void)
 static const byte patt[8] = {0xff, 0x9f, 0x87, 0x8b,
                              0x93, 0xa3, 0x83, 0xff};
     word x, y, delta, i;
-    
+
     y = 100;
     x = 200;
     delta = 40;
@@ -475,7 +475,7 @@ void main(int argc, char* argv[])
     HFP = 2;
     HS  = 6;
     HBP = 8;	/* or 4 */
-    
+
     printf("\nStart test of uPD7220\n");
     if (argc==2 || argc==5) {
         Xmax = atoi(argv[--argc]);
@@ -486,7 +486,7 @@ void main(int argc, char* argv[])
         HBP = atoi(argv[3]);
     }
     printf("HFP=%d  HS=%d  HBP=%d\n", (int)HFP, (int)HS, (int)HBP);
-    
+
     if (Xmax==640) Ymax = 480;
     else if (Xmax==800) Ymax = 600;
     else if (Xmax==832) Ymax = 624;
@@ -503,14 +503,14 @@ void main(int argc, char* argv[])
 //    gdc_fill2(0,0, Xmax-1, Ymax-1, 0);	/* clear the screen */
 
     gdc_display(1);	/* unblank the display */
-    
+
     gdc_pattern(0xFFFF);
     gdc_line(Xmax-1, Ymax-1, Xmax-1, 0);
     gdc_line(Xmax-1, 0, 0, 0);
     gdc_line(0, 0, 0, Ymax-1);
     gdc_line(0, Ymax-1, Xmax-1, Ymax-1);
-    
-    
+
+
     gdc_mode(GDC_REPLACE);
     x1 = 32; x2 = 95;
     for (y=12; y<34; y++) gdc_line(x1, y, x2, y);
@@ -520,7 +520,7 @@ void main(int argc, char* argv[])
     for ( ; y<98; y++) gdc_line(x1, y, x2, y);
     gdc_mode(GDC_XOR);
     for ( ; y<130; y++) gdc_line(x1, y, x2, y);
-    
+
     gdc_mode(GDC_REPLACE);
     gdc_line(100,100, 78,34);	/* example from Design book */
 
@@ -532,16 +532,16 @@ void main(int argc, char* argv[])
     gdc_line(638, 10, 624, 460);
 
     gchar_test();
-    
+
     gdc_pattern(0xFFFF);
     gdc_hline(40, 599, 300, GDC_REPLACE);
     gdc_line(40, 300-5, 40, 285);
     gdc_line(599, 300-5, 599, 285);
-            
+
     gdc_hline(32, 591, 330, GDC_REPLACE);
     gdc_line(32, 330-5, 32, 330-15);
     gdc_line(591, 330-5, 591, 330-15);
-            
+
     gdc_hline(32, 599, 360, GDC_REPLACE);
     gdc_line(32, 360-5, 32, 360-15);
     gdc_line(599, 360-5, 599, 360-15);
@@ -555,7 +555,7 @@ void main(int argc, char* argv[])
     gdc_line(40, 300+5, 599, 300+5);
     gdc_line(32, 330+5, 591, 330+5);
     gdc_line(32, 360+5, 599, 360+5);
-    
+
     y = 360+12;
     for (x1=32; x1<599; x1+=16) {
         x2 = x1+14;
@@ -572,9 +572,9 @@ void main(int argc, char* argv[])
 
     gdc_mode(GDC_OR);
     gdc_line(638, 379, 638, 324);
-    
+
     gdc_done();
     printf("\nEnd test of uPD7220\n");
-    
+
     exit(0);
 }
