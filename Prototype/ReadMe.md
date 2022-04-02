@@ -14,6 +14,7 @@ Important construction notes:
 - CPU needs 4.7K pull ups installed on WAIT#, BUSRQ#, INT2#, DREQ0#, and DREQ1# pins.  Add 4.7K SIP in patch area and run jumper wires as needed
 - install RUN/HALT LED reverse against silkscreen to get green for RUN and red for HALT (note: it depends on what sort of bi-color LED you have.  Some are red-green and others are green-red.  My suggestion is to try it out before soldering it in.  Even loosely placing the LED in the PCB while the board is running will give you an idea of orientation)
 - lift pins 10 and 12 on U20 (74LS06 next to VT82C42) so they're not generating spurious interrupts.  They'll share INT1# with option jumpers on V2
+- U6 should be 74F32 not 74LS32, otherwise affects color palette
 
 
 
