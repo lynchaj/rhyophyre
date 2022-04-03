@@ -15,16 +15,18 @@ Important construction notes:
 - install RUN/HALT LED reverse against silkscreen to get green for RUN and red for HALT (note: it depends on what sort of bi-color LED you have.  Some are red-green and others are green-red.  My suggestion is to try it out before soldering it in.  Even loosely placing the LED in the PCB while the board is running will give you an idea of orientation)
 - lift pins 10 and 12 on U20 (74LS06 next to VT82C42) so they're not generating spurious interrupts.  They'll share INT1# with option jumpers on V2
 - U6 should be 74F32 not 74LS32, otherwise affects color palette
+- if you are seeing flicker in resulting image running test programs (D7220 or T7220) try substituting a 74LS04 for 74F04 in U47.  This eliminated flicker on my Z180GDC V1 and dramatically improved picture quality & stability
 
 
 
 Threshold Goals:
-- implement Z180 SBC with uPD7220 GDC subsystem
-- run RomWBW as supported platform
-- use uPD7220 GDC as video console display (text mode)
+- implement Z180 SBC with uPD7220 GDC subsystem (met)
+- run RomWBW as supported platform (met)
+- 640x480 16 color VGA display using standard monitor (met)
+- default power consumption with 74LSxx & 74Fxx glue logic (met)
+- use uPD7220 GDC as video console display in text mode
 - use PS/2 keyboard as console input
-- 640x480 16 color VGA display using standard monitor
-- default power consumption with 74LSxx & 74Fxx glue logic
+
 
 Objectives:
 - GSX-80 implementation
