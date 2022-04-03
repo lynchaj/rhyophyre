@@ -49,695 +49,1180 @@
 0049   0000             PRAM   			.EQU	070H
 0050   0000             PITCH	 		.EQU	047H
 0051   0000             
-0052   0000             
-0053   0000             ; Drawing modes:
-0054   0000             GDC_REPLACE	.EQU		0
-0055   0000             GDC_XOR		.EQU		1
-0056   0000             GDC_OR		.EQU		3
-0057   0000             GDC_CLEAR	.EQU		2
-0058   0000             
-0059   0000             
+0052   0000             WDAT	 		.EQU	020H
+0053   0000             
+0054   0000             
+0055   0000             ; Drawing modes:
+0056   0000             GDC_REPLACE	.EQU		0
+0057   0000             GDC_XOR		.EQU		1
+0058   0000             GDC_OR		.EQU		3
+0059   0000             GDC_CLEAR	.EQU		2
 0060   0000             
-0061   0000             ;________________________________________________________________________________________________________________________________
-0062   0000             ; MAIN PROGRAM BEGINS HERE
+0061   0000             
+0062   0000             
 0063   0000             ;________________________________________________________________________________________________________________________________
-0064   0100             	.ORG	$0100
-0065   0100             
-0066   0100 11 41 04    	LD	DE,MSG_START	;
-0067   0103 0E 09       	LD	C,09H		;
-0068   0105 CD 05 00    	CALL	0005H 		;
-0069   0108             
-0070   0108 CD CA 01    	CALL	ramdac_init	;
-0071   010B 3E 0F       	LD 	A,0FH		;
-0072   010D CD 18 02    	CALL 	ramdac_set_read_mask	;    ramdac_set_read_mask(0x0F)
-0073   0110 3E 00       	LD	A,0
-0074   0112 CD 1B 02    	CALL 	ramdac_overlay	;   ramdac_overlay(0)
-0075   0115             
-0076   0115             	; ********* RESET
-0077   0115 3E 00       	LD	A,RESET		; DO RESET
-0078   0117 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0079   011A CD FE 02    	CALL 	CLEAR_SCREEN
-0080   011D             
-0081   011D 3E 01       	LD	A,1
-0082   011F CD 40 02    	CALL	gdc_init	;
-0083   0122             
-0084   0122 11 77 04    	LD	DE,MSG_INIT	;
-0085   0125 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
-0086   0127 CD 05 00    	CALL	0005H 		;
-0087   012A             
-0088   012A 11 8F 04    	LD	DE,MSG_GCHAR	;
-0089   012D 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
-0090   012F CD 05 00    	CALL	0005H 		;
-0091   0132             
-0092   0132 CD 35 03        	CALL 	gchar_test	;
-0093   0135             
-0094   0135             	; parameter (character,location,mode,color) in IX,HL,A,C
-0095   0135 DD 21 8A 01 	LD 	IX,CLPATTERN
-0096   0139 21 00 00    	LD 	HL,0000
-0097   013C 3E 00       	LD 	A,GDC_REPLACE
-0098   013E 0E 00       	LD 	C,0
-0099   0140 CD A6 03    	CALL 	gchar_print
-0100   0143             
-0101   0143             	; parameter (character,location,mode,color) in IX,HL,A,C
-0102   0143 DD 21 82 01 	LD 	IX,CHPATTERN
-0103   0147 21 03 00    	LD 	HL,0003
-0104   014A 3E 00       	LD 	A,GDC_REPLACE
-0105   014C 0E 01       	LD 	C,1
-0106   014E CD A6 03    	CALL 	gchar_print
-0107   0151             
-0108   0151             	; parameter (character,location,mode,color) in IX,HL,A,C
-0109   0151 DD 21 8A 01 	LD 	IX,CLPATTERN
-0110   0155 21 12 00    	LD 	HL,0018
-0111   0158 3E 00       	LD 	A,GDC_REPLACE
-0112   015A 0E 02       	LD 	C,2
-0113   015C CD A6 03    	CALL 	gchar_print
-0114   015F             
-0115   015F 11 5D 04    	LD	DE,MSG_END	;
-0116   0162 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
-0117   0164 CD 05 00    	CALL	0005H 		;
-0118   0167             
-0119   0167 0E 00       	LD	C,00H		; CP/M SYSTEM RESET CALL
-0120   0169 CD 05 00    	CALL	0005H 		; RETURN TO PROMPT
-0121   016C             
-0122   016C 12 26 44 04 SYNCP: 	.DB	012H,026H,044H,004H,002H,00AH,0E0H,085H  ;;VERIFY THESE NUMBERS
-0122   0170 02 0A E0 85 
-0123   0174 00 00 00    CCHARP:	.DB	000H,000H,000H
-0124   0177 28          PITCHP:	.DB	028H   ;;VERIFY THESE NUMBERS
-0125   0178 00 00 00 1E PRAMP:	.DB	000H,000H,000H,01EH		;000H,000H,000H,0E0H,001H,000H,000H
-0126   017C 00          ZOOMP:	.DB	000H   VERIFY THESE NUMBERS
-0127   017D 00 00 00    CURSP:	.DB	000H,000H,000H
-0128   0180 FF FF       PATTERN:	.DW	0FFFFH
-0129   0182             
-0130   0182 FF 9F 87 8B CHPATTERN: .DB	0ffH, 09fH, 087H, 08bH,093H, 0a3H, 083H, 0ffH
-0130   0186 93 A3 83 FF 
-0131   018A FF FF FF FF CLPATTERN: .DB	0ffH, 0ffH, 0ffH, 0ffH,0ffH, 0ffH, 0ffH, 0ffH
-0131   018E FF FF FF FF 
-0132   0192 00 00 00 00 ZRPATTERN: .DB	0H, 0H, 0H, 0H,0H, 0H, 0H, 0H
-0132   0196 00 00 00 00 
-0133   019A             
-0134   019A             
-0135   019A             default_palette:
-0136   019A 00 00 00    	.DB	0,   0,   0
-0137   019D 00 00 80    	.DB	0,   0, 128
-0138   01A0 00 80 00    	.DB	0, 128,   0
-0139   01A3 00 80 80    	.DB	0, 128, 128
-0140   01A6 80 00 00    	.DB	128,   0,   0
-0141   01A9 80 00 80    	.DB	128,   0, 128
-0142   01AC 80 40 00    	.DB	128,  64,   0
-0143   01AF 80 80 80    	.DB	128, 128, 128
-0144   01B2 40 40 40    	.DB	64,  64,  64
-0145   01B5 00 00 FF    	.DB	 0,   0, 255
-0146   01B8 00 FF 00    	.DB	 0, 255,   0
-0147   01BB 00 FF FF    	.DB	 0, 255, 255
-0148   01BE FF 00 00    	.DB	255,   0,   0
-0149   01C1 FF 00 FF    	.DB	255,   0, 255
-0150   01C4 FF FF 00    	.DB	255, 255,   0
-0151   01C7 FF FF FF    	.DB	255, 255, 255
-0152   01CA             
-0153   01CA             
-0154   01CA             ramdac_init:
-0155   01CA 3E 00       	LD	A,0		;   ramdac_overlay(0)
-0156   01CC CD 1B 02    	CALL 	ramdac_overlay
-0157   01CF             
-0158   01CF 3E 01       	LD 	A,1
-0159   01D1 DD 21 9D 01 	LD 	IX,default_palette+3
-0160   01D5             ramdac_init_a:
-0161   01D5             	; parameter (overlay, Red,Green,Blue) in C,H,L,B
-0162   01D5 4F          	LD 	C,A
-0163   01D6 DD 66 00    	LD 	H,(IX)
-0164   01D9 DD 23       	INC 	IX
-0165   01DB DD 6E 00    	LD 	L,(IX)
-0166   01DE DD 23       	INC 	IX
-0167   01E0 DD 46 00    	LD 	B,(IX)
-0168   01E3 DD 23       	INC 	IX
-0169   01E5 CD 22 02    	CALL 	ramdac_set_overlay_color
-0170   01E8 3C          	INC 	A
-0171   01E9 FE 10       	CP 	16
-0172   01EB C2 D5 01    	JP 	NZ,ramdac_init_a
-0173   01EE             
-0174   01EE 3E 08       	LD	A,8		;   ramdac_overlay(8)
-0175   01F0 CD 1B 02    	CALL 	ramdac_overlay
-0176   01F3 3E 0F          	LD	A,0FH		;   ramdac_set_read_mask(0x0F);
-0177   01F5 CD 18 02    	CALL	ramdac_set_read_mask
-0178   01F8             
-0179   01F8 3E 00       	LD 	A,0
-0180   01FA DD 21 9A 01 	LD 	IX,default_palette
-0181   01FE             ramdac_init_b:
-0182   01FE             	; parameter (index, Red,Green,Blue) in C,H,L,B
-0183   01FE 4F          	LD 	C,A
-0184   01FF DD 66 00    	LD 	H,(IX)
-0185   0202 DD 23       	INC 	IX
-0186   0204 DD 6E 00    	LD 	L,(IX)
-0187   0207 DD 23       	INC 	IX
-0188   0209 DD 46 00    	LD 	B,(IX)
-0189   020C DD 23       	INC 	IX
-0190   020E CD 31 02    	CALL 	ramdac_set_palette_color
-0191   0211 3C          	INC 	A
-0192   0212 FE 10       	CP 	16
-0193   0214 C2 FE 01    	JP 	NZ,ramdac_init_b
-0194   0217             
-0195   0217 C9          	RET
-0196   0218             
-0197   0218             ; parameter(mask) in A
-0198   0218             ramdac_set_read_mask:
-0199   0218 D3 9A       	OUT	(ramdac_pixel_read_mask),A
-0200   021A C9          	RET
-0201   021B             
-0202   021B             ; parameter(overlay) in A
-0203   021B             ramdac_overlay:
-0204   021B E6 0F       	AND 	LATCH_OVERLAY_MASK
-0205   021D F6 80       	OR 	LATCH_RAMDAC_256
-0206   021F D3 94       	OUT	(ramdac_latch),A	; Set Ramdac latch
-0207   0221 C9          	RET
-0208   0222             
-0209   0222             ; parameter (overlay, Red,Green,Blue) in C,H,L,B
-0210   0222             ramdac_set_overlay_color:
-0211   0222 F5          	PUSH	AF		; STORE REGISTERS
-0212   0223 79          	LD 	A,C
-0213   0224 D3 9C       	OUT	(ramdac_overlay_wr),A
-0214   0226             ;	PUSH 	HL
-0215   0226             ;	call 	HXOUT
-0216   0226             ;	call 	PRINTC
-0217   0226             ;	POP 	HL
-0218   0226             ;	call 	delay
-0219   0226 7C          	LD 	A,H
-0220   0227 D3 9D       	OUT	(ramdac_overlay_ram),A
-0221   0229             ;	PUSH 	HL
-0222   0229             ;	call 	HXOUT
-0223   0229             ;	call 	PRINTP
-0224   0229             ;	POP 	HL
-0225   0229             ;	call 	delay
-0226   0229 7D          	LD 	A,L
-0227   022A D3 9D       	OUT	(ramdac_overlay_ram),A
-0228   022C             ;	PUSH 	HL
-0229   022C             ;	call 	HXOUT
-0230   022C             ;	call 	PRINTP
-0231   022C             ;	POP 	HL
-0232   022C             ;	call 	delay
-0233   022C 78          	LD 	A,B
-0234   022D D3 9D       	OUT	(ramdac_overlay_ram),A
-0235   022F             ;	PUSH 	HL
-0236   022F             	;call 	HXOUT
-0237   022F             ;	call 	PRINTP
-0238   022F             ;	POP 	HL
-0239   022F             ;	call 	delay
-0240   022F             ;	PUSH 	HL
-0241   022F             ;	call 	PRINTCRLF
-0242   022F             ;	POP 	HL
-0243   022F F1          	POP	AF		; RESTORE
-0244   0230 C9          	RET
-0245   0231             
-0246   0231             ; parameter (index, Red,Green,Blue) in C,H,L,B
-0247   0231             ramdac_set_palette_color:
-0248   0231 F5           	PUSH	AF		; STORE REGISTERS
-0249   0232 79          	LD 	A,C
-0250   0233 D3 98       	OUT	(ramdac_address_wr),A
-0251   0235             ;	PUSH 	HL
-0252   0235             ;	call 	HXOUT
-0253   0235             ;	call 	PRINTC
-0254   0235             ;	POP 	HL
-0255   0235             ;	call 	delay
-0256   0235 7C          	LD 	A,H
-0257   0236 D3 99       	OUT	(ramdac_palette_ram),A
-0258   0238             ;	PUSH 	HL
-0259   0238             	;call 	HXOUT
-0260   0238             ;	call 	PRINTP
-0261   0238             ;	POP 	HL
-0262   0238             ;	call 	delay
-0263   0238 7D          	LD 	A,L
-0264   0239 D3 99       	OUT	(ramdac_palette_ram),A
-0265   023B             ;	PUSH 	HL
-0266   023B             ;	call 	HXOUT
-0267   023B             ;	call 	PRINTP
-0268   023B             ;	POP 	HL
-0269   023B             ;	call 	delay
-0270   023B 78          	LD 	A,B
-0271   023C D3 99       	OUT	(ramdac_palette_ram),A
-0272   023E             ;	PUSH 	HL
-0273   023E             ;	call 	HXOUT
-0274   023E             ;	call 	PRINTP
-0275   023E             ;	POP 	HL
-0276   023E             ;	call 	delay
-0277   023E             ;	PUSH 	HL
-0278   023E             ;	call 	PRINTCRLF
-0279   023E             ;	POP 	HL
-0280   023E F1          	POP	AF		; RESTORE
-0281   023F C9          	RET
-0282   0240             
-0283   0240             ; parameter enable/blank the screen 1/0  in A
-0284   0240             gdc_init:
-0285   0240 F5          	PUSH 	AF
-0286   0241             	; ********* RESET
-0287   0241 3E 00       	LD	A,RESET		; DO RESET
-0288   0243 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0289   0246 CD D9 04    	CALL	PRINTCRLF
-0290   0249             	; ********* SYNC
-0291   0249 F1          	POP 	AF
-0292   024A F6 0E       	OR	SYNC		; DO SYNC (0x0E if blanked 0x0F if enabled)
-0293   024C CD 17 04    	CALL	OUTA		; SEND COMMAND
-0294   024F 0E 08       	LD	C,8		; NUMBER PARMS
-0295   0251 21 6C 01    	LD	HL,SYNCP	; PARM TABLE
-0296   0254 CD 31 04    	CALL	OUTC		; SEND PARMS
-0297   0257 CD D9 04    	CALL	PRINTCRLF
-0298   025A             	; ********* VSYNC
-0299   025A 3E 6F       	LD	A,VSYNC		; DO VSYNC
-0300   025C CD 17 04    	CALL	OUTA		; SEND COMMAND
-0301   025F CD D9 04    	CALL	PRINTCRLF
-0302   0262             	; ********* CCHAR
-0303   0262 3E 4B             	LD	A,CCHAR		; DO CCHAR
-0304   0264 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0305   0267 21 74 01    	LD	HL,CCHARP	; PARM TABLE
-0306   026A 0E 03       	LD	C,03H		; NUMBER PARAMS
-0307   026C CD 31 04    	CALL	OUTC
-0308   026F CD D9 04    	CALL	PRINTCRLF
-0309   0272             	; ********* PITCH
-0310   0272 3E 47             	LD	A,PITCH		; DO PITCH
-0311   0274 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0312   0277 21 77 01    	LD	HL,PITCHP	; PARM TABLE
-0313   027A 0E 01       	LD	C,01H		; NUMBER PARAMS
-0314   027C CD 31 04    	CALL	OUTC
-0315   027F CD D9 04    	CALL	PRINTCRLF
-0316   0282             	; ********* PRAM 1
-0317   0282 21 78 01    	LD	HL,PRAMP	; PARM TABLE
-0318   0285 0E 04       	LD	C,4		; NUMBER PARAMS
-0319   0287 3E 00       	LD 	A,0		; START ADDRESS
-0320   0289 CD F3 02        	CALL	gdc_pram	; graphic area 1
-0321   028C CD D9 04    	CALL	PRINTCRLF
-0322   028F             	; ********* PRAM 2
-0323   028F 21 78 01        	LD	HL,PRAMP	; PARM TABLE
-0324   0292 0E 04       	LD	C,4		; NUMBER PARAMS
-0325   0294 3E 04       	LD 	A,4		; START ADDRESS
-0326   0296 CD F3 02        	CALL	gdc_pram	; graphic area 2
-0327   0299 CD D9 04    	CALL	PRINTCRLF
-0328   029C             	; ********* PATTERN
-0329   029C 21 80 01        	LD	HL,PATTERN	; PARM TABLE
-0330   029F 0E 02       	LD	C,2		; NUMBER PARAMS
-0331   02A1 3E 08       	LD 	A,8		; START ADDRESS
-0332   02A3 CD F3 02        	CALL	gdc_pram	; graphic area 2
-0333   02A6 CD D9 04    	CALL	PRINTCRLF
-0334   02A9             	; ********* ZOOM DISPLAY (FACTOR 1)
-0335   02A9 3E 00       	LD 	A,0
-0336   02AB CD E8 02    	CALL 	gdc_zoom_display
-0337   02AE CD D9 04    	CALL	PRINTCRLF
-0338   02B1             	; ********* SET CURSOR
-0339   02B1 21 00 00    	LD 	HL,0000H
-0340   02B4 3E 00       	LD 	A,0H
-0341   02B6 CD D5 02    	CALL 	gdc_setcursor
-0342   02B9 CD D9 04    	CALL	PRINTCRLF
-0343   02BC             	; ********* SET MODE
-0344   02BC 3E 00       	LD 	A,GDC_REPLACE
-0345   02BE CD CD 02    	CALL 	gdc_mode
-0346   02C1 CD D9 04    	CALL	PRINTCRLF
-0347   02C4             	; ********* START
-0348   02C4 3E 6B             	LD	A,START		; DO START
-0349   02C6 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0350   02C9 CD D9 04    	CALL	PRINTCRLF
-0351   02CC C9          	RET
-0352   02CD             
-0353   02CD             ; parameter (mode) in a
-0354   02CD             gdc_mode:
-0355   02CD E6 03       	AND 	3
-0356   02CF F6 20       	OR 	20H
-0357   02D1 CD 17 04    	CALL	OUTA
-0358   02D4 C9          	RET
-0359   02D5             
-0360   02D5             
-0361   02D5             ; parameter (StartAddress) in AHL (AAHHLL)
-0362   02D5             gdc_setcursor:
-0363   02D5 F5          	PUSH 	AF
-0364   02D6 3E 49             	LD	A,CURS		; DO CURS
-0365   02D8 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0366   02DB 7D          	LD 	A,L
-0367   02DC CD 25 04    	CALL	OUTP		; SEND PARM
-0368   02DF 7C          	LD 	A,H
-0369   02E0 CD 25 04    	CALL	OUTP		; SEND PARM
-0370   02E3 F1          	POP 	AF
-0371   02E4 CD 25 04    	CALL	OUTP		; SEND PARM
-0372   02E7 C9          	RET
-0373   02E8             
-0374   02E8             ; parameter (factor) in A
-0375   02E8             gdc_zoom_display:
-0376   02E8 F5          	PUSH 	AF
-0377   02E9 3E 46           	LD 	A,46H
-0378   02EB CD 17 04        	CALL	OUTA		; SEND COMMAND
-0379   02EE F1          	POP 	AF
-0380   02EF CD 25 04    	CALL	OUTP		; SEND PARM
-0381   02F2 C9          	RET
-0382   02F3             
-0383   02F3             ; parameter (start,pointer to param,count) in A,HL,C
-0384   02F3             gdc_pram:
-0385   02F3 E6 0F       	AND 	0FH
-0386   02F5 F6 70       	OR 	PRAM
-0387   02F7 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0388   02FA CD 31 04    	CALL	OUTC
-0389   02FD C9          	RET
-0390   02FE             
-0391   02FE             ; NOT EFFICIENT AT ALL, COULD BE 8X LESS
-0392   02FE             CLEAR_SCREEN:
-0393   02FE 21 00 00    	LD 	HL,0000
-0394   0301             CLEAR_SCREEN_A:
-0395   0301             	; parameter (character,location,mode,color) in IX,HL,A,C
-0396   0301 DD 21 92 01 	LD 	IX,ZRPATTERN
-0397   0305 3E 00       	LD 	A,GDC_REPLACE
-0398   0307 0E 00       	LD 	C,0
-0399   0309 CD A6 03    	CALL 	gchar_print
-0400   030C             	; parameter (character,location,mode,color) in IX,HL,A,C
-0401   030C DD 21 92 01 	LD 	IX,ZRPATTERN
-0402   0310 3E 00       	LD 	A,GDC_REPLACE
-0403   0312 0E 01       	LD 	C,1
-0404   0314 CD A6 03    	CALL 	gchar_print
-0405   0317             	; parameter (character,location,mode,color) in IX,HL,A,C
-0406   0317 DD 21 92 01 	LD 	IX,ZRPATTERN
-0407   031B 3E 00       	LD 	A,GDC_REPLACE
-0408   031D 0E 02       	LD 	C,2
-0409   031F CD A6 03    	CALL 	gchar_print
-0410   0322             	; parameter (character,location,mode,color) in IX,HL,A,C
-0411   0322 DD 21 92 01 	LD 	IX,ZRPATTERN
-0412   0326 3E 00       	LD 	A,GDC_REPLACE
-0413   0328 0E 03       	LD 	C,3
-0414   032A CD A6 03    	CALL 	gchar_print
-0415   032D 23          	INC 	HL
-0416   032E 7C          	LD 	A,H
-0417   032F FE FF       	CP 	0FFH
-0418   0331 C2 01 03    	JP 	NZ,CLEAR_SCREEN_A
-0419   0334             CLEAR_SCREEN_DONE:
-0420   0334 C9          	RET
-0421   0335             
-0422   0335             gchar_test:
-0423   0335             ;  	 x x x x x x x x
-0424   0335             ;        x     x x x x x
-0425   0335             ;        x         x x x
-0426   0335             ;        x       x   x x
-0427   0335             ;        x     x     x x
-0428   0335             ;        x   x       x x
-0429   0335             ;        x           x x
-0430   0335             ;        x x x x x x x x
-0431   0335             
-0432   0335             
-0433   0335             	; ********* ZOOM  	gdc_zoom_draw(3);
-0434   0335 3E 46             	LD	A,ZOOM		; DO ZOOM
-0435   0337 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0436   033A 3E 02       	LD	A,2
-0437   033C CD 25 04    	CALL	OUTP
-0438   033F CD D9 04    	CALL	PRINTCRLF
-0439   0342             
-0440   0342 21 82 01        	LD	HL,CHPATTERN	; PARM TABLE
-0441   0345 0E 08       	LD	C,8		; NUMBER PARAMS
-0442   0347 3E 08       	LD 	A,8		; START ADDRESS
-0443   0349 CD F3 02        	CALL	gdc_pram	; graphic area 2
-0444   034C CD D9 04    	CALL	PRINTCRLF
-0445   034F             
-0446   034F 3E 49             	LD	A,CURS		; DO CURS
-0447   0351 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0448   0354 3E 64       	LD	A,100
-0449   0356 CD 25 04    	CALL 	OUTP
-0450   0359 3E 01       	LD	A,1
-0451   035B CD 25 04    	CALL 	OUTP
-0452   035E 3E 00       	LD	A,0
-0453   0360 CD 25 04    	CALL 	OUTP
-0454   0363 CD D9 04    	CALL	PRINTCRLF
-0455   0366             
-0456   0366             	; ********* SET MODE
-0457   0366 3E 00       	LD 	A,GDC_REPLACE
-0458   0368 CD CD 02    	CALL 	gdc_mode
-0459   036B CD D9 04    	CALL	PRINTCRLF
-0460   036E             
-0461   036E             
-0462   036E 3E 4C             	LD	A,04CH		; DO FIGS
-0463   0370 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0464   0373 3E 10       	LD	A,10H
-0465   0375 CD 25 04    	CALL 	OUTP
-0466   0378 3E 07       	LD	A,7
-0467   037A 0E 00       	LD	C,0
-0468   037C CD 0D 04            CALL	gdc_Dparam	; perp. pix - 1
-0469   037F 3E 08       	LD	A,8
-0470   0381 0E 00       	LD	C,0
-0471   0383 CD 0D 04            CALL 	gdc_Dparam	; initial dir pix
-0472   0386 3E 08       	LD	A,8
-0473   0388 0E 00       	LD	C,0
-0474   038A CD 0D 04            CALL 	gdc_Dparam
-0475   038D CD D9 04    	CALL	PRINTCRLF
-0476   0390             
-0477   0390 3E 68             	LD	A,068H		; DO GCHRD
-0478   0392 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0479   0395 CD D9 04    	CALL	PRINTCRLF
-0480   0398             
-0481   0398               	; ********* ZOOM  	gdc_zoom_draw(1);
-0482   0398 3E 46             	LD	A,ZOOM		; DO ZOOM
-0483   039A CD 17 04    	CALL	OUTA		; SEND COMMAND
-0484   039D 3E 01       	LD	A,1
-0485   039F CD 25 04    	CALL	OUTP
-0486   03A2 CD D9 04    	CALL	PRINTCRLF
-0487   03A5 C9          	RET
-0488   03A6             
-0489   03A6             
-0490   03A6             ; parameter (character,location,mode,color) in IX,HL,A,C
-0491   03A6             gchar_print:
-0492   03A6 E5          	PUSH 	HL
-0493   03A7 F5          	PUSH 	AF
-0494   03A8 C5          	PUSH 	BC
-0495   03A9 E5          	push 	HL
-0496   03AA             	; ********* ZOOM  	gdc_zoom_draw(3);
-0497   03AA 3E 46             	LD	A,ZOOM		; DO ZOOM
-0498   03AC CD 17 04    	CALL	OUTA		; SEND COMMAND
-0499   03AF 3E 01       	LD	A,1
-0500   03B1 CD 25 04    	CALL	OUTP
-0501   03B4 CD D9 04    	CALL	PRINTCRLF
-0502   03B7             
-0503   03B7 DD E5       	PUSH 	IX
-0504   03B9 E1              	POP 	HL		; PARM TABLE
-0505   03BA 0E 08       	LD	C,8		; NUMBER PARAMS
-0506   03BC 3E 08       	LD 	A,8		; START ADDRESS
-0507   03BE CD F3 02        	CALL	gdc_pram	; graphic area 2
-0508   03C1 CD D9 04    	CALL	PRINTCRLF
-0509   03C4             
-0510   03C4 E1          	POP 	HL
-0511   03C5 C1          	POP 	BC
-0512   03C6 3E 49             	LD	A,CURS		; DO CURS
-0513   03C8 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0514   03CB 7D          	LD	A,L
-0515   03CC CD 25 04    	CALL 	OUTP
-0516   03CF 7C          	LD	A,H
-0517   03D0 CD 25 04    	CALL 	OUTP
-0518   03D3 79          	LD	A,C
-0519   03D4 CD 25 04    	CALL 	OUTP
-0520   03D7 CD D9 04    	CALL	PRINTCRLF
-0521   03DA F1          	POP 	AF
-0522   03DB             	; ********* SET MODE
-0523   03DB CD CD 02    	CALL 	gdc_mode
-0524   03DE CD D9 04    	CALL	PRINTCRLF
-0525   03E1             
-0526   03E1             
-0527   03E1 3E 4C             	LD	A,04CH		; DO FIGS
-0528   03E3 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0529   03E6 3E 10       	LD	A,10H
-0530   03E8 CD 25 04    	CALL 	OUTP
-0531   03EB 3E 07       	LD	A,7
-0532   03ED 0E 00       	LD	C,0
-0533   03EF CD 0D 04            CALL	gdc_Dparam	; perp. pix - 1
-0534   03F2 3E 08       	LD	A,8
-0535   03F4 0E 00       	LD	C,0
-0536   03F6 CD 0D 04            CALL 	gdc_Dparam	; initial dir pix
-0537   03F9 3E 08       	LD	A,8
-0538   03FB 0E 00       	LD	C,0
-0539   03FD CD 0D 04            CALL 	gdc_Dparam
-0540   0400 CD D9 04    	CALL	PRINTCRLF
-0541   0403             
-0542   0403 3E 68             	LD	A,068H		; DO GCHRD
-0543   0405 CD 17 04    	CALL	OUTA		; SEND COMMAND
-0544   0408 CD D9 04    	CALL	PRINTCRLF
-0545   040B E1          	POP 	HL
-0546   040C C9          	RET
-0547   040D             
-0548   040D             
-0549   040D             ; parameter (d,or) in A,C
-0550   040D             gdc_Dparam:
-0551   040D F5          	PUSH 	AF
-0552   040E CD 25 04    	CALL 	OUTP
-0553   0411 F1          	POP 	AF
-0554   0412             
-0555   0412             ;	AND 	03FH
-0556   0412             ;	OR 	C
-0557   0412 79          	LD 	A,C
-0558   0413 CD 25 04    	CALL 	OUTP
-0559   0416 C9          	RET
-0560   0417             
-0561   0417             OUTA:
-0562   0417 E5          	PUSH 	HL
-0563   0418 F5           	PUSH	AF		; STORE REGISTERS
-0564   0419             OUTALOOP:
-0565   0419 DB 90       	IN	A,(gdc_status) 	; READ STATUS
-0566   041B E6 0A       	AND	00001010B	; IS READY?
-0567   041D C2 19 04    	JP	NZ,OUTALOOP	; NO, LOOP
-0568   0420 F1          	POP	AF		; YES, RESTORE GDC COMMAND
-0569   0421 D3 91       	OUT	(gdc_command),A	; FIFO GDC command
-0570   0423             ;	call 	HXOUT
-0571   0423             ;	call 	PRINTC
-0572   0423 E1          	POP 	HL
-0573   0424 C9          	RET
-0574   0425             
-0575   0425             
-0576   0425             OUTP:
-0577   0425 F5           	PUSH	AF		; STORE REGISTERS
-0578   0426             OUTPLOOP:
-0579   0426 DB 90       	IN	A,(gdc_status) 	; READ STATUS
-0580   0428 E6 0A       	AND	00001010B	; IS READY?
-0581   042A C2 26 04    	JP	NZ,OUTPLOOP	; NO, LOOP
-0582   042D F1          	POP	AF		; YES, RESTORE GDC PARAMETER
-0583   042E D3 90       	OUT	(gdc_param),A	; FIFO GDC PARAMETER
-0584   0430             ;	call 	HXOUT
-0585   0430             ;	call 	PRINTP
-0586   0430 C9          	RET
-0587   0431             
-0588   0431             
-0589   0431             OUTC:
-0590   0431 DB 90         	IN	A,(gdc_status)	; READ STATUS
-0591   0433 E6 0A       	AND	00001010B  	; IS READY?
-0592   0435 C2 31 04    	JP	NZ,OUTC		; NO,LOOP
-0593   0438 7E          	LD	A,(HL)		; GET GDC PARM
-0594   0439             
-0595   0439             ;	PUSH 	HL
-0596   0439             ;	call 	HXOUT
-0597   0439             ;	call 	PRINTP
-0598   0439             ;	POP 	HL
-0599   0439             
-0600   0439 D3 90       	OUT	(gdc_param),A	; WRITE PARM TO GDC
-0601   043B 23          	INC	HL		; NEXT PARM
-0602   043C 0D          	DEC	C		; DEC COUNTER
-0603   043D C2 31 04    	JP	NZ,OUTC		; IF NOT DONE, LOOP
-0604   0440 C9          	RET			;
-0605   0441             
-0606   0441             
-0607   0441             MSG_START:
-0608   0441 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0609   0443 53 54 41 52 	.TEXT	  "START 7220 TEST PROGRAM"
-0609   0447 54 20 37 32 
-0609   044B 32 30 20 54 
-0609   044F 45 53 54 20 
-0609   0453 50 52 4F 47 
-0609   0457 52 41 4D 
-0610   045A 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0611   045C 24          	.DB	    END 				      ; LINE TERMINATOR
-0612   045D             
-0613   045D             MSG_END:
-0614   045D 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0615   045F 45 4E 44 20 	.TEXT	  "END 7220 TEST PROGRAM"
-0615   0463 37 32 32 30 
-0615   0467 20 54 45 53 
-0615   046B 54 20 50 52 
-0615   046F 4F 47 52 41 
-0615   0473 4D 
-0616   0474 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0617   0476 24          	.DB	    END 				      ; LINE TERMINATOR
-0618   0477             
-0619   0477             MSG_INIT:
-0620   0477 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0621   0479 37 32 32 30 	.TEXT	  "7220 INIT COMPLETED"
-0621   047D 20 49 4E 49 
-0621   0481 54 20 43 4F 
-0621   0485 4D 50 4C 45 
-0621   0489 54 45 44 
-0622   048C 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0623   048E 24          	.DB	    END 				      ; LINE TERMINATOR
-0624   048F             
-0625   048F             
-0626   048F             MSG_GCHAR:
-0627   048F 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0628   0491 37 32 32 30 	.TEXT	  "7220 GCHAR TEST"
-0628   0495 20 47 43 48 
-0628   0499 41 52 20 54 
-0628   049D 45 53 54 
-0629   04A0 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
-0630   04A2 24          	.DB	    END 				      ; LINE TERMINATOR
-0631   04A3             
-0632   04A3             
-0633   04A3             ;delay:
-0634   04A3             ;	push 	af
-0635   04A3             ;	ld 	a,0
-0636   04A3             ;delaya:
-0637   04A3             ;	inc 	A
-0638   04A3             ;	cp 	200
-0639   04A3             ;	jp 	nz,delaya
-0640   04A3             ;	pop 	af
-0641   04A3             ;	RET
-0642   04A3             
-0643   04A3             
-0644   04A3             ;________________________________________________________________________________________________________________________________
-0645   04A3             ;
-0646   04A3             COUT:
-0647   04A3 C5          	PUSH   BC			; STORE AF
-0648   04A4 D5          	PUSH   DE
-0649   04A5 5F          	LD 	E,A
-0650   04A6 0E 02       	LD	C,02H		;
-0651   04A8 CD 05 00    	CALL	0005H 		;
-0652   04AB D1          	POP 	DE
-0653   04AC C1          	POP	BC			; RESTORE AF
-0654   04AD C9          	RET				; DONE
-0655   04AE             
-0656   04AE             HXOUT:
-0657   04AE F5          	push    af
-0658   04AF C5          	PUSH	BC			; SAVE BC
-0659   04B0 47          	LD	B,A			;
-0660   04B1 CB 07       	RLC	A			; DO HIGH NIBBLE FIRST
-0661   04B3 CB 07       	RLC	A			;
-0662   04B5 CB 07       	RLC	A			;
-0663   04B7 CB 07       	RLC	A			;
-0664   04B9 E6 0F       	AND	0FH			; ONLY THIS NOW
-0665   04BB C6 30       	ADD	A,30H			; TRY A NUMBER
-0666   04BD FE 3A       	CP	3AH			; TEST IT
-0667   04BF 38 02       	JR	C,OUT1			; IF CY SET PRINT 'NUMBER'
-0668   04C1 C6 07       	ADD	A,07H			; MAKE IT AN ALPHA
-0669   04C3             OUT1:
-0670   04C3 CD A3 04    	CALL	COUT			; SCREEN IT
-0671   04C6 78          	LD	A,B			; NEXT NIBBLE
-0672   04C7 E6 0F       	AND	0FH			; JUST THIS
-0673   04C9 C6 30       	ADD	A,30H			; TRY A NUMBER
-0674   04CB FE 3A       	CP	3AH			; TEST IT
-0675   04CD 38 02       	JR	C,OUT2			; PRINT 'NUMBER'
-0676   04CF C6 07       	ADD	A,07H			; MAKE IT ALPHA
-0677   04D1             OUT2:
-0678   04D1 CD A3 04    	CALL	COUT			; SCREEN IT
-0679   04D4 C1          	POP	BC			; RESTORE BC
-0680   04D5 F1          	pop   	af
-0681   04D6 C9          	RET				;
-0682   04D7             
-0683   04D7             
-0684   04D7             PRINTC:
-0685   04D7             	;PUSH	AF			; STORE AF
-0686   04D7             	;LD	A,':'			;
-0687   04D7             	;CALL	COUT			; SCREEN IT
-0688   04D7             	;POP	AF			; RESTORE AF
-0689   04D7 C9          	RET				; DONE
-0690   04D8             PRINTP:
-0691   04D8             	;PUSH	AF			; STORE AF
-0692   04D8             	;LD	A,' '			;
-0693   04D8             	;CALL	COUT			; SCREEN IT
-0694   04D8             	;POP	AF			; RESTORE AF
-0695   04D8 C9          	RET
-0696   04D9             
-0697   04D9             PRINTCRLF:
-0698   04D9             ;	PUSH	AF			; STORE AF
-0699   04D9             	;LD	A,10			;
-0700   04D9             	;CALL	COUT			; SCREEN IT
-0701   04D9             	;LD	A,13			;
-0702   04D9             	;CALL	COUT			; SCREEN IT
-0703   04D9             
-0704   04D9             	;POP	AF			; RESTORE AF
-0705   04D9 C9          	RET
-0706   04DA             
-0707   04DA             
-0708   04DA             
-0709   04DA             
-0710   04DA             
-0711   04DA             
-0712   04DA             
-0713   04DA             
-0714   04DA             
-0715   04DA             
-0716   04DA             
-0717   04DA             
-0718   04DA             
-0719   04DA             
-0720   04DA             
-0721   04DA             
-0722   04DA             .END
+0064   0000             ; MAIN PROGRAM BEGINS HERE
+0065   0000             ;________________________________________________________________________________________________________________________________
+0066   0100             	.ORG	$0100
+0067   0100             
+0068   0100 11 30 04    	LD	DE,MSG_START	;
+0069   0103 0E 09       	LD	C,09H		;
+0070   0105 CD 05 00    	CALL	0005H 		;
+0071   0108             
+0072   0108 CD DD 01    	CALL	ramdac_init	;
+0073   010B 3E 0F       	LD 	A,0FH		;
+0074   010D CD 2B 02    	CALL 	ramdac_set_read_mask	;    ramdac_set_read_mask(0x0F)
+0075   0110 3E 00       	LD	A,0
+0076   0112 CD 2E 02    	CALL 	ramdac_overlay	;   ramdac_overlay(0)
+0077   0115             
+0078   0115             
+0079   0115 3E 01       	LD	A,1
+0080   0117 CD 53 02    	CALL	gdc_init	;
+0081   011A             
+0082   011A 11 66 04    	LD	DE,MSG_INIT	;
+0083   011D 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
+0084   011F CD 05 00    	CALL	0005H 		;
+0085   0122             
+0086   0122 CD ED 02    	CALL 	CLEAR_SCREEN
+0087   0125             
+0088   0125             
+0089   0125 11 7E 04    	LD	DE,MSG_GCHAR	;
+0090   0128 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
+0091   012A CD 05 00    	CALL	0005H 		;
+0092   012D             
+0093   012D CD 5F 03        	CALL 	gchar_test	;
+0094   0130             
+0095   0130             	; ********* ZOOM  	gdc_zoom_draw(0);
+0096   0130 3E 46             	LD	A,ZOOM		; DO ZOOM
+0097   0132 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0098   0135 3E 00       	LD	A,0
+0099   0137 CD 14 04    	CALL	OUTP
+0100   013A             
+0101   013A             	; parameter (character,location,mode,color) in IX,HL,A,C
+0102   013A DD 21 47 0B 	LD 	IX,FONT+1656-8
+0103   013E 21 00 00    	LD 	HL,0000
+0104   0141 3E 00       	LD 	A,GDC_REPLACE
+0105   0143 0E 00       	LD 	C,0
+0106   0145 CD B1 03    	CALL 	gchar_print
+0107   0148             
+0108   0148             	; parameter (character,location,mode,color) in IX,HL,A,C
+0109   0148 DD 21 3F 0B 	LD 	IX,FONT+1656-16
+0110   014C 21 01 00    	LD 	HL,0001
+0111   014F 3E 00       	LD 	A,GDC_REPLACE
+0112   0151 0E 01       	LD 	C,1
+0113   0153 CD B1 03    	CALL 	gchar_print
+0114   0156             
+0115   0156             	; parameter (character,location,mode,color) in IX,HL,A,C
+0116   0156 DD 21 37 0B 	LD 	IX,FONT+1656-24
+0117   015A 21 02 00    	LD 	HL,002
+0118   015D 3E 00       	LD 	A,GDC_REPLACE
+0119   015F 0E 02       	LD 	C,2
+0120   0161 CD B1 03    	CALL 	gchar_print
+0121   0164             
+0122   0164             	; parameter (character,location,mode,color) in IX,HL,A,C
+0123   0164 DD 21 2F 0B 	LD 	IX,FONT+1656-32
+0124   0168 21 03 00    	LD 	HL,003
+0125   016B 3E 00       	LD 	A,GDC_REPLACE
+0126   016D 0E 03       	LD 	C,3
+0127   016F CD B1 03    	CALL 	gchar_print
+0128   0172             
+0129   0172             
+0130   0172             
+0131   0172 11 4C 04    	LD	DE,MSG_END	;
+0132   0175 0E 09       	LD	C,09H		; CP/M WRITE END STRING TO CONSOLE CALL
+0133   0177 CD 05 00    	CALL	0005H 		;
+0134   017A             
+0135   017A 0E 00       	LD	C,00H		; CP/M SYSTEM RESET CALL
+0136   017C CD 05 00    	CALL	0005H 		; RETURN TO PROMPT
+0137   017F             
+0138   017F 12 26 44 04 SYNCP: 	.DB	012H,026H,044H,004H,002H,00AH,0E0H,085H  ;;VERIFY THESE NUMBERS
+0138   0183 02 0A E0 85 
+0139   0187 00 00 00    CCHARP:	.DB	000H,000H,000H
+0140   018A 28          PITCHP:	.DB	028H   ;;VERIFY THESE NUMBERS
+0141   018B 00 00 00 1E PRAMP:	.DB	000H,000H,000H,01EH		;000H,000H,000H,0E0H,001H,000H,000H
+0142   018F 00          ZOOMP:	.DB	000H   VERIFY THESE NUMBERS
+0143   0190 00 00 00    CURSP:	.DB	000H,000H,000H
+0144   0193 FF FF       PATTERN:	.DW	0FFFFH
+0145   0195             
+0146   0195 FF 9F 87 8B CHPATTERN: .DB	0ffH, 09fH, 087H, 08bH,093H, 0a3H, 083H, 0ffH
+0146   0199 93 A3 83 FF 
+0147   019D FF FF FF FF CLPATTERN: .DB	0ffH, 0ffH, 0ffH, 0ffH,0ffH, 0ffH, 0ffH, 0ffH
+0147   01A1 FF FF FF FF 
+0148   01A5 00 00 00 00 ZRPATTERN: .DB	0H, 0H, 0H, 0H,0H, 0H, 0H, 0H
+0148   01A9 00 00 00 00 
+0149   01AD             
+0150   01AD             
+0151   01AD             default_palette:
+0152   01AD 00 00 00    	.DB	0,   0,   0
+0153   01B0 00 00 80    	.DB	0,   0, 128
+0154   01B3 00 80 00    	.DB	0, 128,   0
+0155   01B6 00 80 80    	.DB	0, 128, 128
+0156   01B9 80 00 00    	.DB	128,   0,   0
+0157   01BC 80 00 80    	.DB	128,   0, 128
+0158   01BF 80 40 00    	.DB	128,  64,   0
+0159   01C2 80 80 80    	.DB	128, 128, 128
+0160   01C5 40 40 40    	.DB	64,  64,  64
+0161   01C8 00 00 FF    	.DB	 0,   0, 255
+0162   01CB 00 FF 00    	.DB	 0, 255,   0
+0163   01CE 00 FF FF    	.DB	 0, 255, 255
+0164   01D1 FF 00 00    	.DB	255,   0,   0
+0165   01D4 FF 00 FF    	.DB	255,   0, 255
+0166   01D7 FF FF 00    	.DB	255, 255,   0
+0167   01DA FF FF FF    	.DB	255, 255, 255
+0168   01DD             
+0169   01DD             
+0170   01DD             ramdac_init:
+0171   01DD 3E 00       	LD	A,0		;   ramdac_overlay(0)
+0172   01DF CD 2E 02    	CALL 	ramdac_overlay
+0173   01E2             
+0174   01E2 3E 01       	LD 	A,1
+0175   01E4 DD 21 B0 01 	LD 	IX,default_palette+3
+0176   01E8             ramdac_init_a:
+0177   01E8             	; parameter (overlay, Red,Green,Blue) in C,H,L,B
+0178   01E8 4F          	LD 	C,A
+0179   01E9 DD 66 00    	LD 	H,(IX)
+0180   01EC DD 23       	INC 	IX
+0181   01EE DD 6E 00    	LD 	L,(IX)
+0182   01F1 DD 23       	INC 	IX
+0183   01F3 DD 46 00    	LD 	B,(IX)
+0184   01F6 DD 23       	INC 	IX
+0185   01F8 CD 35 02    	CALL 	ramdac_set_overlay_color
+0186   01FB 3C          	INC 	A
+0187   01FC FE 10       	CP 	16
+0188   01FE C2 E8 01    	JP 	NZ,ramdac_init_a
+0189   0201             
+0190   0201 3E 08       	LD	A,8		;   ramdac_overlay(8)
+0191   0203 CD 2E 02    	CALL 	ramdac_overlay
+0192   0206 3E 0F          	LD	A,0FH		;   ramdac_set_read_mask(0x0F);
+0193   0208 CD 2B 02    	CALL	ramdac_set_read_mask
+0194   020B             
+0195   020B 3E 00       	LD 	A,0
+0196   020D DD 21 AD 01 	LD 	IX,default_palette
+0197   0211             ramdac_init_b:
+0198   0211             	; parameter (index, Red,Green,Blue) in C,H,L,B
+0199   0211 4F          	LD 	C,A
+0200   0212 DD 66 00    	LD 	H,(IX)
+0201   0215 DD 23       	INC 	IX
+0202   0217 DD 6E 00    	LD 	L,(IX)
+0203   021A DD 23       	INC 	IX
+0204   021C DD 46 00    	LD 	B,(IX)
+0205   021F DD 23       	INC 	IX
+0206   0221 CD 44 02    	CALL 	ramdac_set_palette_color
+0207   0224 3C          	INC 	A
+0208   0225 FE 10       	CP 	16
+0209   0227 C2 11 02    	JP 	NZ,ramdac_init_b
+0210   022A             
+0211   022A C9          	RET
+0212   022B             
+0213   022B             ; parameter(mask) in A
+0214   022B             ramdac_set_read_mask:
+0215   022B D3 9A       	OUT	(ramdac_pixel_read_mask),A
+0216   022D C9          	RET
+0217   022E             
+0218   022E             ; parameter(overlay) in A
+0219   022E             ramdac_overlay:
+0220   022E E6 0F       	AND 	LATCH_OVERLAY_MASK
+0221   0230 F6 80       	OR 	LATCH_RAMDAC_256
+0222   0232 D3 94       	OUT	(ramdac_latch),A	; Set Ramdac latch
+0223   0234 C9          	RET
+0224   0235             
+0225   0235             ; parameter (overlay, Red,Green,Blue) in C,H,L,B
+0226   0235             ramdac_set_overlay_color:
+0227   0235 F5          	PUSH	AF		; STORE REGISTERS
+0228   0236 79          	LD 	A,C
+0229   0237 D3 9C       	OUT	(ramdac_overlay_wr),A
+0230   0239             ;	PUSH 	HL
+0231   0239             ;	call 	HXOUT
+0232   0239             ;	call 	PRINTC
+0233   0239             ;	POP 	HL
+0234   0239             ;	call 	delay
+0235   0239 7C          	LD 	A,H
+0236   023A D3 9D       	OUT	(ramdac_overlay_ram),A
+0237   023C             ;	PUSH 	HL
+0238   023C             ;	call 	HXOUT
+0239   023C             ;	call 	PRINTP
+0240   023C             ;	POP 	HL
+0241   023C             ;	call 	delay
+0242   023C 7D          	LD 	A,L
+0243   023D D3 9D       	OUT	(ramdac_overlay_ram),A
+0244   023F             ;	PUSH 	HL
+0245   023F             ;	call 	HXOUT
+0246   023F             ;	call 	PRINTP
+0247   023F             ;	POP 	HL
+0248   023F             ;	call 	delay
+0249   023F 78          	LD 	A,B
+0250   0240 D3 9D       	OUT	(ramdac_overlay_ram),A
+0251   0242             ;	PUSH 	HL
+0252   0242             	;call 	HXOUT
+0253   0242             ;	call 	PRINTP
+0254   0242             ;	POP 	HL
+0255   0242             ;	call 	delay
+0256   0242             ;	PUSH 	HL
+0257   0242             ;	call 	PRINTCRLF
+0258   0242             ;	POP 	HL
+0259   0242 F1          	POP	AF		; RESTORE
+0260   0243 C9          	RET
+0261   0244             
+0262   0244             ; parameter (index, Red,Green,Blue) in C,H,L,B
+0263   0244             ramdac_set_palette_color:
+0264   0244 F5           	PUSH	AF		; STORE REGISTERS
+0265   0245 79          	LD 	A,C
+0266   0246 D3 98       	OUT	(ramdac_address_wr),A
+0267   0248             ;	PUSH 	HL
+0268   0248             ;	call 	HXOUT
+0269   0248             ;	call 	PRINTC
+0270   0248             ;	POP 	HL
+0271   0248             ;	call 	delay
+0272   0248 7C          	LD 	A,H
+0273   0249 D3 99       	OUT	(ramdac_palette_ram),A
+0274   024B             ;	PUSH 	HL
+0275   024B             	;call 	HXOUT
+0276   024B             ;	call 	PRINTP
+0277   024B             ;	POP 	HL
+0278   024B             ;	call 	delay
+0279   024B 7D          	LD 	A,L
+0280   024C D3 99       	OUT	(ramdac_palette_ram),A
+0281   024E             ;	PUSH 	HL
+0282   024E             ;	call 	HXOUT
+0283   024E             ;	call 	PRINTP
+0284   024E             ;	POP 	HL
+0285   024E             ;	call 	delay
+0286   024E 78          	LD 	A,B
+0287   024F D3 99       	OUT	(ramdac_palette_ram),A
+0288   0251             ;	PUSH 	HL
+0289   0251             ;	call 	HXOUT
+0290   0251             ;	call 	PRINTP
+0291   0251             ;	POP 	HL
+0292   0251             ;	call 	delay
+0293   0251             ;	PUSH 	HL
+0294   0251             ;	call 	PRINTCRLF
+0295   0251             ;	POP 	HL
+0296   0251 F1          	POP	AF		; RESTORE
+0297   0252 C9          	RET
+0298   0253             
+0299   0253             ; parameter enable/blank the screen 1/0  in A
+0300   0253             gdc_init:
+0301   0253 F5          	PUSH 	AF
+0302   0254             	; ********* RESET
+0303   0254 3E 00       	LD	A,RESET		; DO RESET
+0304   0256 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0305   0259             	; ********* SYNC
+0306   0259 F1          	POP 	AF
+0307   025A F6 0E       	OR	SYNC		; DO SYNC (0x0E if blanked 0x0F if enabled)
+0308   025C CD 06 04    	CALL	OUTA		; SEND COMMAND
+0309   025F 0E 08       	LD	C,8		; NUMBER PARMS
+0310   0261 21 7F 01    	LD	HL,SYNCP	; PARM TABLE
+0311   0264 CD 20 04    	CALL	OUTC		; SEND PARMS
+0312   0267             	; ********* VSYNC
+0313   0267 3E 6F       	LD	A,VSYNC		; DO VSYNC
+0314   0269 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0315   026C             	; ********* CCHAR
+0316   026C 3E 4B             	LD	A,CCHAR		; DO CCHAR
+0317   026E CD 06 04    	CALL	OUTA		; SEND COMMAND
+0318   0271 21 87 01    	LD	HL,CCHARP	; PARM TABLE
+0319   0274 0E 03       	LD	C,03H		; NUMBER PARAMS
+0320   0276 CD 20 04    	CALL	OUTC
+0321   0279             	; ********* PITCH
+0322   0279 3E 47             	LD	A,PITCH		; DO PITCH
+0323   027B CD 06 04    	CALL	OUTA		; SEND COMMAND
+0324   027E 21 8A 01    	LD	HL,PITCHP	; PARM TABLE
+0325   0281 0E 01       	LD	C,01H		; NUMBER PARAMS
+0326   0283 CD 20 04    	CALL	OUTC
+0327   0286             	; ********* PRAM 1
+0328   0286 21 8B 01    	LD	HL,PRAMP	; PARM TABLE
+0329   0289 0E 04       	LD	C,4		; NUMBER PARAMS
+0330   028B 3E 00       	LD 	A,0		; START ADDRESS
+0331   028D CD E2 02        	CALL	gdc_pram	; graphic area 1
+0332   0290             	; ********* PRAM 2
+0333   0290 21 8B 01        	LD	HL,PRAMP	; PARM TABLE
+0334   0293 0E 04       	LD	C,4		; NUMBER PARAMS
+0335   0295 3E 04       	LD 	A,4		; START ADDRESS
+0336   0297 CD E2 02        	CALL	gdc_pram	; graphic area 2
+0337   029A             	; ********* PATTERN
+0338   029A 21 93 01        	LD	HL,PATTERN	; PARM TABLE
+0339   029D 0E 02       	LD	C,2		; NUMBER PARAMS
+0340   029F 3E 08       	LD 	A,8		; START ADDRESS
+0341   02A1 CD E2 02        	CALL	gdc_pram	; graphic area 2
+0342   02A4             	; ********* ZOOM DISPLAY (FACTOR 1)
+0343   02A4 3E 00       	LD 	A,0
+0344   02A6 CD D7 02    	CALL 	gdc_zoom_display
+0345   02A9             	; ********* SET CURSOR
+0346   02A9 21 00 00    	LD 	HL,0000H
+0347   02AC 3E 00       	LD 	A,0H
+0348   02AE CD C4 02    	CALL 	gdc_setcursor
+0349   02B1             	; ********* SET MODE
+0350   02B1 3E 00       	LD 	A,GDC_REPLACE
+0351   02B3 CD BC 02    	CALL 	gdc_mode
+0352   02B6             	; ********* START
+0353   02B6 3E 6B             	LD	A,START		; DO START
+0354   02B8 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0355   02BB C9          	RET
+0356   02BC             
+0357   02BC             ; parameter (mode) in a
+0358   02BC             gdc_mode:
+0359   02BC E6 03       	AND 	3
+0360   02BE F6 20       	OR 	20H
+0361   02C0 CD 06 04    	CALL	OUTA
+0362   02C3 C9          	RET
+0363   02C4             
+0364   02C4             
+0365   02C4             ; parameter (StartAddress) in AHL (AAHHLL)
+0366   02C4             gdc_setcursor:
+0367   02C4 F5          	PUSH 	AF
+0368   02C5 3E 49             	LD	A,CURS		; DO CURS
+0369   02C7 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0370   02CA 7D          	LD 	A,L
+0371   02CB CD 14 04    	CALL	OUTP		; SEND PARM
+0372   02CE 7C          	LD 	A,H
+0373   02CF CD 14 04    	CALL	OUTP		; SEND PARM
+0374   02D2 F1          	POP 	AF
+0375   02D3 CD 14 04    	CALL	OUTP		; SEND PARM
+0376   02D6 C9          	RET
+0377   02D7             
+0378   02D7             ; parameter (factor) in A
+0379   02D7             gdc_zoom_display:
+0380   02D7 F5          	PUSH 	AF
+0381   02D8 3E 46           	LD 	A,46H
+0382   02DA CD 06 04        	CALL	OUTA		; SEND COMMAND
+0383   02DD F1          	POP 	AF
+0384   02DE CD 14 04    	CALL	OUTP		; SEND PARM
+0385   02E1 C9          	RET
+0386   02E2             
+0387   02E2             ; parameter (start,pointer to param,count) in A,HL,C
+0388   02E2             gdc_pram:
+0389   02E2 E6 0F       	AND 	0FH
+0390   02E4 F6 70       	OR 	PRAM
+0391   02E6 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0392   02E9 CD 20 04    	CALL	OUTC
+0393   02EC C9          	RET
+0394   02ED             
+0395   02ED             
+0396   02ED             CLEAR_SCREEN:
+0397   02ED             
+0398   02ED 3E 0F       	LD 	A,0FH
+0399   02EF CD D7 02    	CALL 	gdc_zoom_display
+0400   02F2 21 35 03    	LD 	HL,CLEAR_SCREEN_TABLE
+0401   02F5             CLEAR_SCREEN_A:
+0402   02F5             	; parameter (character,location,mode,color) in IX,HL,A,C
+0403   02F5 E5          	PUSH 	HL
+0404   02F6 5E          	LD 	E,(HL)
+0405   02F7 23          	INC 	HL
+0406   02F8 56          	LD 	D,(HL)
+0407   02F9 EB          	EX 	DE,HL
+0408   02FA DD 21 A5 01 	LD 	IX,ZRPATTERN
+0409   02FE 3E 00       	LD 	A,GDC_REPLACE
+0410   0300 0E 00       	LD 	C,0
+0411   0302 CD B1 03    	CALL 	gchar_print
+0412   0305             	; parameter (character,location,mode,color) in IX,HL,A,C
+0413   0305 DD 21 A5 01 	LD 	IX,ZRPATTERN
+0414   0309 3E 00       	LD 	A,GDC_REPLACE
+0415   030B 0E 01       	LD 	C,1
+0416   030D CD B1 03    	CALL 	gchar_print
+0417   0310             	; parameter (character,location,mode,color) in IX,HL,A,C
+0418   0310 DD 21 A5 01 	LD 	IX,ZRPATTERN
+0419   0314 3E 00       	LD 	A,GDC_REPLACE
+0420   0316 0E 02       	LD 	C,2
+0421   0318 CD B1 03    	CALL 	gchar_print
+0422   031B             	; parameter (character,location,mode,color) in IX,HL,A,C
+0423   031B DD 21 A5 01 	LD 	IX,ZRPATTERN
+0424   031F 3E 00       	LD 	A,GDC_REPLACE
+0425   0321 0E 03       	LD 	C,3
+0426   0323 CD B1 03    	CALL 	gchar_print
+0427   0326 E1          	POP 	HL
+0428   0327 23          	INC 	HL
+0429   0328 23          	INC 	HL
+0430   0329 7E          	LD 	A,(HL)
+0431   032A FE FF       	CP 	0FFH
+0432   032C C2 F5 02    	JP 	NZ,CLEAR_SCREEN_A
+0433   032F 3E 0F       	LD 	A,0FH
+0434   0331 CD D7 02    	CALL 	gdc_zoom_display
+0435   0334 C9          	RET
+0436   0335             CLEAR_SCREEN_TABLE:
+0437   0335 00 00 08 00 	.DW 	0000H,0008H,0010H,0018H,0020H
+0437   0339 10 00 18 00 
+0437   033D 20 00 
+0438   033F 00 14 08 14 	.DW 	1400H,1408H,1410H,1418H,1420H
+0438   0343 10 14 18 14 
+0438   0347 20 14 
+0439   0349 00 28 08 28 	.DW 	2800H,2808H,2810H,2818H,2820H
+0439   034D 10 28 18 28 
+0439   0351 20 28 
+0440   0353 00 3C 08 3C 	.DW 	3C00H,3C08H,3C10H,3C18H,3C20H,0FFFFH
+0440   0357 10 3C 18 3C 
+0440   035B 20 3C FF FF 
+0441   035F             
+0442   035F             
+0443   035F             gchar_test:
+0444   035F             ;  	 x x x x x x x x
+0445   035F             ;        x     x x x x x
+0446   035F             ;        x         x x x
+0447   035F             ;        x       x   x x
+0448   035F             ;        x     x     x x
+0449   035F             ;        x   x       x x
+0450   035F             ;        x           x x
+0451   035F             ;        x x x x x x x x
+0452   035F             
+0453   035F             
+0454   035F             	; ********* ZOOM  	gdc_zoom_draw(3);
+0455   035F 3E 46             	LD	A,ZOOM		; DO ZOOM
+0456   0361 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0457   0364 3E 02       	LD	A,2
+0458   0366 CD 14 04    	CALL	OUTP
+0459   0369             
+0460   0369 21 95 01        	LD	HL,CHPATTERN	; PARM TABLE
+0461   036C 0E 08       	LD	C,8		; NUMBER PARAMS
+0462   036E 3E 08       	LD 	A,8		; START ADDRESS
+0463   0370 CD E2 02        	CALL	gdc_pram	; graphic area 2
+0464   0373             
+0465   0373 3E 49             	LD	A,CURS		; DO CURS
+0466   0375 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0467   0378 3E 64       	LD	A,100
+0468   037A CD 14 04    	CALL 	OUTP
+0469   037D 3E 01       	LD	A,1
+0470   037F CD 14 04    	CALL 	OUTP
+0471   0382 3E 00       	LD	A,0
+0472   0384 CD 14 04    	CALL 	OUTP
+0473   0387             
+0474   0387             	; ********* SET MODE
+0475   0387 3E 00       	LD 	A,GDC_REPLACE
+0476   0389 CD BC 02    	CALL 	gdc_mode
+0477   038C             
+0478   038C             
+0479   038C 3E 4C             	LD	A,04CH		; DO FIGS
+0480   038E CD 06 04    	CALL	OUTA		; SEND COMMAND
+0481   0391 3E 10       	LD	A,10H
+0482   0393 CD 14 04    	CALL 	OUTP
+0483   0396 3E 07       	LD	A,7
+0484   0398 0E 00       	LD	C,0
+0485   039A CD FC 03            CALL	gdc_Dparam	; perp. pix - 1
+0486   039D 3E 08       	LD	A,8
+0487   039F 0E 00       	LD	C,0
+0488   03A1 CD FC 03            CALL 	gdc_Dparam	; initial dir pix
+0489   03A4 3E 08       	LD	A,8
+0490   03A6 0E 00       	LD	C,0
+0491   03A8 CD FC 03            CALL 	gdc_Dparam
+0492   03AB             
+0493   03AB 3E 68             	LD	A,068H		; DO GCHRD
+0494   03AD CD 06 04    	CALL	OUTA		; SEND COMMAND
+0495   03B0 C9          	RET
+0496   03B1             
+0497   03B1             
+0498   03B1             ; parameter (character,location,mode,color) in IX,HL,A,C
+0499   03B1             gchar_print:
+0500   03B1 E5          	PUSH 	HL
+0501   03B2 F5          	PUSH 	AF
+0502   03B3 C5          	PUSH 	BC
+0503   03B4 E5          	push 	HL
+0504   03B5             
+0505   03B5             
+0506   03B5 DD E5       	PUSH 	IX
+0507   03B7 E1              	POP 	HL		; PARM TABLE
+0508   03B8 0E 08       	LD	C,8		; NUMBER PARAMS
+0509   03BA 3E 08       	LD 	A,8		; START ADDRESS
+0510   03BC CD E2 02        	CALL	gdc_pram	; graphic area 2
+0511   03BF             
+0512   03BF E1          	POP 	HL
+0513   03C0 C1          	POP 	BC
+0514   03C1 3E 49             	LD	A,CURS		; DO CURS
+0515   03C3 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0516   03C6 7D          	LD	A,L
+0517   03C7 CD 14 04    	CALL 	OUTP
+0518   03CA 7C          	LD	A,H
+0519   03CB CD 14 04    	CALL 	OUTP
+0520   03CE 79          	LD	A,C
+0521   03CF CD 14 04    	CALL 	OUTP
+0522   03D2 F1          	POP 	AF
+0523   03D3             	; ********* SET MODE
+0524   03D3 CD BC 02    	CALL 	gdc_mode
+0525   03D6             
+0526   03D6             
+0527   03D6 3E 4C             	LD	A,04CH		; DO FIGS
+0528   03D8 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0529   03DB 3E 10       	LD	A,10H
+0530   03DD CD 14 04    	CALL 	OUTP
+0531   03E0 3E 07       	LD	A,7
+0532   03E2 0E 00       	LD	C,0
+0533   03E4 CD FC 03            CALL	gdc_Dparam	; perp. pix - 1
+0534   03E7 3E 08       	LD	A,8
+0535   03E9 0E 00       	LD	C,0
+0536   03EB CD FC 03            CALL 	gdc_Dparam	; initial dir pix
+0537   03EE 3E 08       	LD	A,8
+0538   03F0 0E 00       	LD	C,0
+0539   03F2 CD FC 03            CALL 	gdc_Dparam
+0540   03F5             
+0541   03F5 3E 68             	LD	A,068H		; DO GCHRD
+0542   03F7 CD 06 04    	CALL	OUTA		; SEND COMMAND
+0543   03FA E1          	POP 	HL
+0544   03FB C9          	RET
+0545   03FC             
+0546   03FC             
+0547   03FC             ; parameter (d,or) in A,C
+0548   03FC             gdc_Dparam:
+0549   03FC F5          	PUSH 	AF
+0550   03FD CD 14 04    	CALL 	OUTP
+0551   0400 F1          	POP 	AF
+0552   0401             
+0553   0401             ;	AND 	03FH
+0554   0401             ;	OR 	C
+0555   0401 79          	LD 	A,C
+0556   0402 CD 14 04    	CALL 	OUTP
+0557   0405 C9          	RET
+0558   0406             
+0559   0406             OUTA:
+0560   0406 E5          	PUSH 	HL
+0561   0407 F5           	PUSH	AF		; STORE REGISTERS
+0562   0408             OUTALOOP:
+0563   0408 DB 90       	IN	A,(gdc_status) 	; READ STATUS
+0564   040A E6 0A       	AND	00001010B	; IS READY?
+0565   040C C2 08 04    	JP	NZ,OUTALOOP	; NO, LOOP
+0566   040F F1          	POP	AF		; YES, RESTORE GDC COMMAND
+0567   0410 D3 91       	OUT	(gdc_command),A	; FIFO GDC command
+0568   0412 E1          	POP 	HL
+0569   0413 C9          	RET
+0570   0414             
+0571   0414             
+0572   0414             OUTP:
+0573   0414 F5           	PUSH	AF		; STORE REGISTERS
+0574   0415             OUTPLOOP:
+0575   0415 DB 90       	IN	A,(gdc_status) 	; READ STATUS
+0576   0417 E6 0A       	AND	00001010B	; IS READY?
+0577   0419 C2 15 04    	JP	NZ,OUTPLOOP	; NO, LOOP
+0578   041C F1          	POP	AF		; YES, RESTORE GDC PARAMETER
+0579   041D D3 90       	OUT	(gdc_param),A	; FIFO GDC PARAMETER
+0580   041F C9          	RET
+0581   0420             
+0582   0420             
+0583   0420             OUTC:
+0584   0420 DB 90         	IN	A,(gdc_status)	; READ STATUS
+0585   0422 E6 0A       	AND	00001010B  	; IS READY?
+0586   0424 C2 20 04    	JP	NZ,OUTC		; NO,LOOP
+0587   0427 7E          	LD	A,(HL)		; GET GDC PARM
+0588   0428 D3 90       	OUT	(gdc_param),A	; WRITE PARM TO GDC
+0589   042A 23          	INC	HL		; NEXT PARM
+0590   042B 0D          	DEC	C		; DEC COUNTER
+0591   042C C2 20 04    	JP	NZ,OUTC		; IF NOT DONE, LOOP
+0592   042F C9          	RET			;
+0593   0430             
+0594   0430             
+0595   0430             MSG_START:
+0596   0430 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0597   0432 53 54 41 52 	.TEXT	  "START 7220 TEST PROGRAM"
+0597   0436 54 20 37 32 
+0597   043A 32 30 20 54 
+0597   043E 45 53 54 20 
+0597   0442 50 52 4F 47 
+0597   0446 52 41 4D 
+0598   0449 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0599   044B 24          	.DB	    END 				      ; LINE TERMINATOR
+0600   044C             
+0601   044C             MSG_END:
+0602   044C 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0603   044E 45 4E 44 20 	.TEXT	  "END 7220 TEST PROGRAM"
+0603   0452 37 32 32 30 
+0603   0456 20 54 45 53 
+0603   045A 54 20 50 52 
+0603   045E 4F 47 52 41 
+0603   0462 4D 
+0604   0463 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0605   0465 24          	.DB	    END 				      ; LINE TERMINATOR
+0606   0466             
+0607   0466             MSG_INIT:
+0608   0466 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0609   0468 37 32 32 30 	.TEXT	  "7220 INIT COMPLETED"
+0609   046C 20 49 4E 49 
+0609   0470 54 20 43 4F 
+0609   0474 4D 50 4C 45 
+0609   0478 54 45 44 
+0610   047B 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0611   047D 24          	.DB	    END 				      ; LINE TERMINATOR
+0612   047E             
+0613   047E             
+0614   047E             MSG_GCHAR:
+0615   047E 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0616   0480 37 32 32 30 	.TEXT	  "7220 GCHAR TEST"
+0616   0484 20 47 43 48 
+0616   0488 41 52 20 54 
+0616   048C 45 53 54 
+0617   048F 0A 0D       	.DB	    LF, CR				      ; LINE FEED AND CARRIAGE RETURN
+0618   0491 24          	.DB	    END 				      ; LINE TERMINATOR
+0619   0492             
+0620   0492             
+0621   0492             
+0622   0492             ;________________________________________________________________________________________________________________________________
+0623   0492             ;
+0624   0492             COUT:
+0625   0492 C5          	PUSH   BC			; STORE AF
+0626   0493 D5          	PUSH   DE
+0627   0494 5F          	LD 	E,A
+0628   0495 0E 02       	LD	C,02H		;
+0629   0497 CD 05 00    	CALL	0005H 		;
+0630   049A D1          	POP 	DE
+0631   049B C1          	POP	BC			; RESTORE AF
+0632   049C C9          	RET				; DONE
+0633   049D             
+0634   049D             HXOUT:
+0635   049D F5          	push    af
+0636   049E C5          	PUSH	BC			; SAVE BC
+0637   049F 47          	LD	B,A			;
+0638   04A0 CB 07       	RLC	A			; DO HIGH NIBBLE FIRST
+0639   04A2 CB 07       	RLC	A			;
+0640   04A4 CB 07       	RLC	A			;
+0641   04A6 CB 07       	RLC	A			;
+0642   04A8 E6 0F       	AND	0FH			; ONLY THIS NOW
+0643   04AA C6 30       	ADD	A,30H			; TRY A NUMBER
+0644   04AC FE 3A       	CP	3AH			; TEST IT
+0645   04AE 38 02       	JR	C,OUT1			; IF CY SET PRINT 'NUMBER'
+0646   04B0 C6 07       	ADD	A,07H			; MAKE IT AN ALPHA
+0647   04B2             OUT1:
+0648   04B2 CD 92 04    	CALL	COUT			; SCREEN IT
+0649   04B5 78          	LD	A,B			; NEXT NIBBLE
+0650   04B6 E6 0F       	AND	0FH			; JUST THIS
+0651   04B8 C6 30       	ADD	A,30H			; TRY A NUMBER
+0652   04BA FE 3A       	CP	3AH			; TEST IT
+0653   04BC 38 02       	JR	C,OUT2			; PRINT 'NUMBER'
+0654   04BE C6 07       	ADD	A,07H			; MAKE IT ALPHA
+0655   04C0             OUT2:
+0656   04C0 CD 92 04    	CALL	COUT			; SCREEN IT
+0657   04C3 C1          	POP	BC			; RESTORE BC
+0658   04C4 F1          	pop   	af
+0659   04C5 C9          	RET				;
+0660   04C6             
+0661   04C6             
+0662   04C6             PRINTC:
+0663   04C6 F5          	PUSH	AF			; STORE AF
+0664   04C7 3E 3A       	LD	A,':'			;
+0665   04C9 CD 92 04    	CALL	COUT			; SCREEN IT
+0666   04CC F1          	POP	AF			; RESTORE AF
+0667   04CD C9          	RET				; DONE
+0668   04CE             PRINTP:
+0669   04CE F5          	PUSH	AF			; STORE AF
+0670   04CF 3E 20       	LD	A,' '			;
+0671   04D1 CD 92 04    	CALL	COUT			; SCREEN IT
+0672   04D4 F1          	POP	AF			; RESTORE AF
+0673   04D5 C9          	RET
+0674   04D6             
+0675   04D6             PRINTCRLF:
+0676   04D6             ;	PUSH	AF			; STORE AF
+0677   04D6             	;LD	A,10			;
+0678   04D6             	;CALL	COUT			; SCREEN IT
+0679   04D6             	;LD	A,13			;
+0680   04D6             	;CALL	COUT			; SCREEN IT
+0681   04D6             
+0682   04D6             	;POP	AF			; RESTORE AF
+0683   04D6 C9          	RET
+0684   04D7             
+0685   04D7             
+0686   04D7             
+0687   04D7             FONT:			 ; Font file from FontEditor
+0688   04D7 00 00 78 78  .DB $00,$00,$78,$78,$78,$78,$00,$00 ; $FE
+0688   04DB 78 78 00 00 
+0689   04DF 00 00 00 00  .DB $00,$00,$00,$00,$70,$20,$10,$60 ; $FD
+0689   04E3 70 20 10 60 
+0690   04E7 00 00 00 00  .DB $00,$00,$00,$00,$28,$28,$28,$50 ; $FC
+0690   04EB 28 28 28 50 
+0691   04EF 00 20 50 50  .DB $00,$20,$50,$50,$10,$10,$1C,$00 ; $FB
+0691   04F3 10 10 1C 00 
+0692   04F7 00 00 00 00  .DB $00,$00,$00,$00,$20,$00,$00,$00 ; $FA
+0692   04FB 20 00 00 00 
+0693   04FF 00 00 00 30  .DB $00,$00,$00,$30,$30,$00,$00,$00 ; $F9
+0693   0503 30 00 00 00 
+0694   0507 00 00 00 00  .DB $00,$00,$00,$00,$30,$48,$48,$30 ; $F8
+0694   050B 30 48 48 30 
+0695   050F 00 00 50 28  .DB $00,$00,$50,$28,$00,$50,$28,$00 ; $F7
+0695   0513 00 50 28 00 
+0696   0517 00 00 10 00  .DB $00,$00,$10,$00,$7C,$00,$10,$00 ; $F6
+0696   051B 7C 00 10 00 
+0697   051F 00 20 50 10  .DB $00,$20,$50,$10,$10,$10,$10,$10 ; $F5
+0697   0523 10 10 10 10 
+0698   0527 10 10 10 10  .DB $10,$10,$10,$10,$10,$14,$08,$00 ; $F4
+0698   052B 10 14 08 00 
+0699   052F 00 78 00 08  .DB $00,$78,$00,$08,$30,$40,$30,$08 ; $F3
+0699   0533 30 40 30 08 
+0700   0537 00 78 00 40  .DB $00,$78,$00,$40,$30,$08,$30,$40 ; $F2
+0700   053B 30 08 30 40 
+0701   053F 00 00 38 00  .DB $00,$00,$38,$00,$10,$38,$10,$00 ; $F1
+0701   0543 10 38 10 00 
+0702   0547 00 00 78 00  .DB $00,$00,$78,$00,$78,$00,$78,$00 ; $F0
+0702   054B 78 00 78 00 
+0703   054F 00 00 48 48  .DB $00,$00,$48,$48,$48,$48,$30,$00 ; $EF
+0703   0553 48 48 30 00 
+0704   0557 00 00 38 40  .DB $00,$00,$38,$40,$78,$40,$38,$00 ; $EE
+0704   055B 78 40 38 00 
+0705   055F 00 10 38 54  .DB $00,$10,$38,$54,$54,$38,$10,$00 ; $ED
+0705   0563 54 38 10 00 
+0706   0567 00 00 28 54  .DB $00,$00,$28,$54,$54,$28,$00,$00 ; $EC
+0706   056B 54 28 00 00 
+0707   056F 00 30 48 38  .DB $00,$30,$48,$38,$10,$20,$40,$30 ; $EB
+0707   0573 10 20 40 30 
+0708   0577 00 6C 28 28  .DB $00,$6C,$28,$28,$44,$44,$38,$00 ; $EA
+0708   057B 44 44 38 00 
+0709   057F 00 30 48 48  .DB $00,$30,$48,$48,$78,$48,$48,$30 ; $E9
+0709   0583 78 48 48 30 
+0710   0587 00 38 10 38  .DB $00,$38,$10,$38,$44,$38,$10,$38 ; $E8
+0710   058B 44 38 10 38 
+0711   058F 00 10 10 10  .DB $00,$10,$10,$10,$50,$28,$00,$00 ; $E7
+0711   0593 50 28 00 00 
+0712   0597 40 40 70 48  .DB $40,$40,$70,$48,$48,$48,$00,$00 ; $E6
+0712   059B 48 48 00 00 
+0713   059F 00 00 30 48  .DB $00,$00,$30,$48,$48,$3C,$00,$00 ; $E5
+0713   05A3 48 3C 00 00 
+0714   05A7 00 78 48 20  .DB $00,$78,$48,$20,$10,$20,$48,$78 ; $E4
+0714   05AB 10 20 48 78 
+0715   05AF 00 28 28 28  .DB $00,$28,$28,$28,$28,$28,$7C,$00 ; $E3
+0715   05B3 28 28 7C 00 
+0716   05B7 00 40 40 40  .DB $00,$40,$40,$40,$40,$40,$48,$78 ; $E2
+0716   05BB 40 40 48 78 
+0717   05BF 40 70 48 48  .DB $40,$70,$48,$48,$70,$48,$70,$00 ; $E1
+0717   05C3 70 48 70 00 
+0718   05C7 00 00 34 48  .DB $00,$00,$34,$48,$48,$34,$00,$00 ; $E0
+0718   05CB 48 34 00 00 
+0719   05CF 00 00 00 00  .DB $00,$00,$00,$00,$FC,$FC,$FC,$FC ; $DF
+0719   05D3 FC FC FC FC 
+0720   05D7 1C 1C 1C 1C  .DB $1C,$1C,$1C,$1C,$1C,$1C,$1C,$1C ; $DE
+0720   05DB 1C 1C 1C 1C 
+0721   05DF E0 E0 E0 E0  .DB $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0 ; $DD
+0721   05E3 E0 E0 E0 E0 
+0722   05E7 FC FC FC FC  .DB $FC,$FC,$FC,$FC,$00,$00,$00,$00 ; $DC
+0722   05EB 00 00 00 00 
+0723   05EF FC FC FC FC  .DB $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC ; $DB
+0723   05F3 FC FC FC FC 
+0724   05F7 10 10 10 10  .DB $10,$10,$10,$10,$1C,$00,$00,$00 ; $DA
+0724   05FB 1C 00 00 00 
+0725   05FF 00 00 00 00  .DB $00,$00,$00,$00,$F0,$10,$10,$10 ; $D9
+0725   0603 F0 10 10 10 
+0726   0607 10 10 10 10  .DB $10,$10,$10,$10,$FC,$00,$FC,$10 ; $D8
+0726   060B FC 00 FC 10 
+0727   060F 50 50 50 50  .DB $50,$50,$50,$50,$DC,$50,$50,$50 ; $D7
+0727   0613 DC 50 50 50 
+0728   0617 50 50 50 50  .DB $50,$50,$50,$50,$7C,$00,$00,$00 ; $D6
+0728   061B 7C 00 00 00 
+0729   061F 10 10 10 10  .DB $10,$10,$10,$10,$1C,$10,$1C,$00 ; $D5
+0729   0623 1C 10 1C 00 
+0730   0627 00 00 00 00  .DB $00,$00,$00,$00,$1C,$10,$1C,$10 ; $D4
+0730   062B 1C 10 1C 10 
+0731   062F 00 00 00 00  .DB $00,$00,$00,$00,$7C,$50,$50,$50 ; $D3
+0731   0633 7C 50 50 50 
+0732   0637 50 50 50 50  .DB $50,$50,$50,$50,$FC,$00,$00,$00 ; $D2
+0732   063B FC 00 00 00 
+0733   063F 10 10 10 10  .DB $10,$10,$10,$10,$FC,$00,$FC,$00 ; $D1
+0733   0643 FC 00 FC 00 
+0734   0647 00 00 00 00  .DB $00,$00,$00,$00,$FC,$50,$50,$50 ; $D0
+0734   064B FC 50 50 50 
+0735   064F 00 00 00 00  .DB $00,$00,$00,$00,$FC,$00,$FC,$10 ; $CF
+0735   0653 FC 00 FC 10 
+0736   0657 50 50 50 50  .DB $50,$50,$50,$50,$DC,$00,$DC,$50 ; $CE
+0736   065B DC 00 DC 50 
+0737   065F 00 00 00 00  .DB $00,$00,$00,$00,$FC,$00,$FC,$00 ; $CD
+0737   0663 FC 00 FC 00 
+0738   0667 50 50 50 50  .DB $50,$50,$50,$50,$5C,$40,$5C,$50 ; $CC
+0738   066B 5C 40 5C 50 
+0739   066F 50 50 50 50  .DB $50,$50,$50,$50,$DC,$00,$FC,$00 ; $CB
+0739   0673 DC 00 FC 00 
+0740   0677 00 00 00 00  .DB $00,$00,$00,$00,$FC,$00,$DC,$50 ; $CA
+0740   067B FC 00 DC 50 
+0741   067F 50 50 50 50  .DB $50,$50,$50,$50,$5C,$40,$7C,$00 ; $C9
+0741   0683 5C 40 7C 00 
+0742   0687 00 00 00 00  .DB $00,$00,$00,$00,$7C,$40,$5C,$50 ; $C8
+0742   068B 7C 40 5C 50 
+0743   068F 50 50 50 50  .DB $50,$50,$50,$50,$5C,$50,$50,$50 ; $C7
+0743   0693 5C 50 50 50 
+0744   0697 10 10 10 10  .DB $10,$10,$10,$10,$1C,$10,$1C,$10 ; $C6
+0744   069B 1C 10 1C 10 
+0745   069F 10 10 10 10  .DB $10,$10,$10,$10,$FC,$10,$10,$10 ; $C5
+0745   06A3 FC 10 10 10 
+0746   06A7 00 00 00 00  .DB $00,$00,$00,$00,$FC,$00,$00,$00 ; $C4
+0746   06AB FC 00 00 00 
+0747   06AF 10 10 10 10  .DB $10,$10,$10,$10,$1C,$10,$10,$10 ; $C3
+0747   06B3 1C 10 10 10 
+0748   06B7 10 10 10 10  .DB $10,$10,$10,$10,$FC,$00,$00,$00 ; $C2
+0748   06BB FC 00 00 00 
+0749   06BF 00 00 00 00  .DB $00,$00,$00,$00,$FC,$10,$10,$10 ; $C1
+0749   06C3 FC 10 10 10 
+0750   06C7 00 00 00 00  .DB $00,$00,$00,$00,$1C,$10,$10,$10 ; $C0
+0750   06CB 1C 10 10 10 
+0751   06CF 10 10 10 10  .DB $10,$10,$10,$10,$F0,$00,$00,$00 ; $BF
+0751   06D3 F0 00 00 00 
+0752   06D7 00 00 00 00  .DB $00,$00,$00,$00,$F0,$10,$F0,$10 ; $BE
+0752   06DB F0 10 F0 10 
+0753   06DF 00 00 00 00  .DB $00,$00,$00,$00,$F0,$50,$50,$50 ; $BD
+0753   06E3 F0 50 50 50 
+0754   06E7 00 00 00 00  .DB $00,$00,$00,$00,$F0,$10,$D0,$50 ; $BC
+0754   06EB F0 10 D0 50 
+0755   06EF 50 50 50 50  .DB $50,$50,$50,$50,$D0,$10,$F0,$00 ; $BB
+0755   06F3 D0 10 F0 00 
+0756   06F7 50 50 50 50  .DB $50,$50,$50,$50,$50,$50,$50,$50 ; $BA
+0756   06FB 50 50 50 50 
+0757   06FF 50 50 50 50  .DB $50,$50,$50,$50,$D0,$10,$D0,$50 ; $B9
+0757   0703 D0 10 D0 50 
+0758   0707 10 10 10 10  .DB $10,$10,$10,$10,$F0,$10,$F0,$00 ; $B8
+0758   070B F0 10 F0 00 
+0759   070F 50 50 50 50  .DB $50,$50,$50,$50,$F0,$00,$00,$00 ; $B7
+0759   0713 F0 00 00 00 
+0760   0717 50 50 50 50  .DB $50,$50,$50,$50,$D0,$50,$50,$50 ; $B6
+0760   071B D0 50 50 50 
+0761   071F 10 10 10 10  .DB $10,$10,$10,$10,$F0,$10,$F0,$10 ; $B5
+0761   0723 F0 10 F0 10 
+0762   0727 10 10 10 10  .DB $10,$10,$10,$10,$F0,$10,$10,$10 ; $B4
+0762   072B F0 10 10 10 
+0763   072F 10 10 10 10  .DB $10,$10,$10,$10,$10,$10,$10,$10 ; $B3
+0763   0733 10 10 10 10 
+0764   0737 FC 54 FC A8  .DB $FC,$54,$FC,$A8,$FC,$54,$FC,$A8 ; $B2
+0764   073B FC 54 FC A8 
+0765   073F A8 54 A8 54  .DB $A8,$54,$A8,$54,$A8,$54,$A8,$54 ; $B1
+0765   0743 A8 54 A8 54 
+0766   0747 00 A8 00 54  .DB $00,$A8,$00,$54,$00,$A8,$00,$54 ; $B0
+0766   074B 00 A8 00 54 
+0767   074F 00 00 00 48  .DB $00,$00,$00,$48,$24,$48,$00,$00 ; $AF
+0767   0753 24 48 00 00 
+0768   0757 00 00 00 24  .DB $00,$00,$00,$24,$48,$24,$00,$00 ; $AE
+0768   075B 48 24 00 00 
+0769   075F 00 10 38 38  .DB $00,$10,$38,$38,$10,$10,$00,$10 ; $AD
+0769   0763 10 10 00 10 
+0770   0767 00 04 1C 54  .DB $00,$04,$1C,$54,$2C,$50,$48,$40 ; $AC
+0770   076B 2C 50 48 40 
+0771   076F 00 1C 08 44  .DB $00,$1C,$08,$44,$38,$50,$48,$40 ; $AB
+0771   0773 38 50 48 40 
+0772   0777 00 00 00 04  .DB $00,$00,$00,$04,$04,$FC,$00,$00 ; $AA
+0772   077B 04 FC 00 00 
+0773   077F 00 00 40 40  .DB $00,$00,$40,$40,$40,$7C,$00,$00 ; $A9
+0773   0783 40 7C 00 00 
+0774   0787 00 38 44 40  .DB $00,$38,$44,$40,$30,$10,$00,$10 ; $A8
+0774   078B 30 10 00 10 
+0775   078F 00 78 48 48  .DB $00,$78,$48,$48,$48,$48,$78,$00 ; $A7
+0775   0793 48 48 78 00 
+0776   0797 78 FC FC FC  .DB $78,$FC,$FC,$FC,$FC,$FC,$FC,$78 ; $A6
+0776   079B FC FC FC 78 
+0777   079F 00 30 78 78  .DB $00,$30,$78,$78,$78,$78,$30,$00 ; $A5
+0777   07A3 78 78 30 00 
+0778   07A7 00 30 48 48  .DB $00,$30,$48,$48,$48,$48,$30,$00 ; $A4
+0778   07AB 48 48 30 00 
+0779   07AF 78 84 84 84  .DB $78,$84,$84,$84,$84,$84,$84,$78 ; $A3
+0779   07B3 84 84 84 78 
+0780   07B7 04 04 04 04  .DB $04,$04,$04,$04,$04,$04,$04,$04 ; $A2
+0780   07BB 04 04 04 04 
+0781   07BF 08 08 08 08  .DB $08,$08,$08,$08,$08,$08,$08,$08 ; $A1
+0781   07C3 08 08 08 08 
+0782   07C7 20 20 20 20  .DB $20,$20,$20,$20,$20,$20,$20,$20 ; $A0
+0782   07CB 20 20 20 20 
+0783   07CF 20 50 10 10  .DB $20,$50,$10,$10,$38,$10,$14,$08 ; $9F
+0783   07D3 38 10 14 08 
+0784   07D7 00 48 48 5C  .DB $00,$48,$48,$5C,$68,$50,$50,$60 ; $9E
+0784   07DB 68 50 50 60 
+0785   07DF 00 10 7C 10  .DB $00,$10,$7C,$10,$7C,$10,$28,$44 ; $9D
+0785   07E3 7C 10 28 44 
+0786   07E7 00 5C 24 20  .DB $00,$5C,$24,$20,$78,$20,$24,$18 ; $9C
+0786   07EB 78 20 24 18 
+0787   07EF 40 40 40 40  .DB $40,$40,$40,$40,$40,$40,$40,$40 ; $9B
+0787   07F3 40 40 40 40 
+0788   07F7 80 80 80 80  .DB $80,$80,$80,$80,$80,$80,$80,$80 ; $9A
+0788   07FB 80 80 80 80 
+0789   07FF 00 00 00 00  .DB $00,$00,$00,$00,$04,$0C,$1C,$3C ; $99
+0789   0803 04 0C 1C 3C 
+0790   0807 00 00 00 00  .DB $00,$00,$00,$00,$80,$C0,$E0,$F0 ; $98
+0790   080B 80 C0 E0 F0 
+0791   080F F0 E0 C0 80  .DB $F0,$E0,$C0,$80,$00,$00,$00,$00 ; $97
+0791   0813 00 00 00 00 
+0792   0817 3C 1C 0C 04  .DB $3C,$1C,$0C,$04,$00,$00,$00,$00 ; $96
+0792   081B 00 00 00 00 
+0793   081F 00 00 78 00  .DB $00,$00,$78,$00,$78,$00,$78,$00 ; $95
+0793   0823 78 00 78 00 
+0794   0827 00 00 54 54  .DB $00,$00,$54,$54,$54,$54,$54,$00 ; $94
+0794   082B 54 54 54 00 
+0795   082F 00 00 00 00  .DB $00,$00,$00,$00,$00,$00,$00,$FC ; $93
+0795   0833 00 00 00 FC 
+0796   0837 00 00 00 00  .DB $00,$00,$00,$00,$00,$00,$FC,$00 ; $92
+0796   083B 00 00 FC 00 
+0797   083F 00 00 00 00  .DB $00,$00,$00,$00,$00,$FC,$00,$00 ; $91
+0797   0843 00 FC 00 00 
+0798   0847 00 00 00 FC  .DB $00,$00,$00,$FC,$00,$00,$00,$00 ; $90
+0798   084B 00 00 00 00 
+0799   084F 00 00 FC 00  .DB $00,$00,$FC,$00,$00,$00,$00,$00 ; $8F
+0799   0853 00 00 00 00 
+0800   0857 00 FC 00 00  .DB $00,$FC,$00,$00,$00,$00,$00,$00 ; $8E
+0800   085B 00 00 00 00 
+0801   085F 1C 1C 1C 1C  .DB $1C,$1C,$1C,$1C,$FC,$FC,$FC,$FC ; $8D
+0801   0863 FC FC FC FC 
+0802   0867 E0 E0 E0 E0  .DB $E0,$E0,$E0,$E0,$FC,$FC,$FC,$FC ; $8C
+0802   086B FC FC FC FC 
+0803   086F FC FC FC FC  .DB $FC,$FC,$FC,$FC,$E0,$E0,$E0,$E0 ; $8B
+0803   0873 E0 E0 E0 E0 
+0804   0877 FC FC FC FC  .DB $FC,$FC,$FC,$FC,$1C,$1C,$1C,$1C ; $8A
+0804   087B 1C 1C 1C 1C 
+0805   087F 00 00 00 00  .DB $00,$00,$00,$00,$1C,$1C,$1C,$1C ; $89
+0805   0883 1C 1C 1C 1C 
+0806   0887 E0 E0 E0 E0  .DB $E0,$E0,$E0,$E0,$00,$00,$00,$00 ; $88
+0806   088B 00 00 00 00 
+0807   088F 00 00 00 00  .DB $00,$00,$00,$00,$1C,$1C,$1C,$1C ; $87
+0807   0893 1C 1C 1C 1C 
+0808   0897 00 00 00 00  .DB $00,$00,$00,$00,$E0,$E0,$E0,$E0 ; $86
+0808   089B E0 E0 E0 E0 
+0809   089F 00 F8 FC FC  .DB $00,$F8,$FC,$FC,$FC,$FC,$F8,$00 ; $85
+0809   08A3 FC FC F8 00 
+0810   08A7 00 FC FC FC  .DB $00,$FC,$FC,$FC,$FC,$FC,$FC,$00 ; $84
+0810   08AB FC FC FC 00 
+0811   08AF 00 3C 7C 7C  .DB $00,$3C,$7C,$7C,$7C,$7C,$3C,$00 ; $83
+0811   08B3 7C 7C 3C 00 
+0812   08B7 38 7C 7C 7C  .DB $38,$7C,$7C,$7C,$7C,$7C,$7C,$7C ; $82
+0812   08BB 7C 7C 7C 7C 
+0813   08BF 7C 7C 7C 7C  .DB $7C,$7C,$7C,$7C,$7C,$7C,$7C,$7C ; $81
+0813   08C3 7C 7C 7C 7C 
+0814   08C7 7C 7C 7C 7C  .DB $7C,$7C,$7C,$7C,$7C,$7C,$7C,$38 ; $80
+0814   08CB 7C 7C 7C 38 
+0815   08CF 00 00 7C 44  .DB $00,$00,$7C,$44,$44,$6C,$38,$10 ; $7F
+0815   08D3 44 6C 38 10 
+0816   08D7 00 00 00 00  .DB $00,$00,$00,$00,$00,$00,$50,$28 ; $7E
+0816   08DB 00 00 50 28 
+0817   08DF 00 30 08 08  .DB $00,$30,$08,$08,$0C,$08,$08,$30 ; $7D
+0817   08E3 0C 08 08 30 
+0818   08E7 00 10 10 10  .DB $00,$10,$10,$10,$00,$10,$10,$10 ; $7C
+0818   08EB 00 10 10 10 
+0819   08EF 00 18 20 20  .DB $00,$18,$20,$20,$60,$20,$20,$18 ; $7B
+0819   08F3 60 20 20 18 
+0820   08F7 00 78 40 30  .DB $00,$78,$40,$30,$08,$78,$00,$00 ; $7A
+0820   08FB 08 78 00 00 
+0821   08FF 60 10 38 48  .DB $60,$10,$38,$48,$48,$48,$00,$00 ; $79
+0821   0903 48 48 00 00 
+0822   0907 00 48 48 30  .DB $00,$48,$48,$30,$48,$48,$00,$00 ; $78
+0822   090B 48 48 00 00 
+0823   090F 00 28 7C 54  .DB $00,$28,$7C,$54,$44,$44,$00,$00 ; $77
+0823   0913 44 44 00 00 
+0824   0917 00 10 28 44  .DB $00,$10,$28,$44,$44,$44,$00,$00 ; $76
+0824   091B 44 44 00 00 
+0825   091F 00 28 58 48  .DB $00,$28,$58,$48,$48,$48,$00,$00 ; $75
+0825   0923 48 48 00 00 
+0826   0927 00 10 28 20  .DB $00,$10,$28,$20,$20,$78,$20,$00 ; $74
+0826   092B 20 78 20 00 
+0827   092F 00 38 04 38  .DB $00,$38,$04,$38,$40,$38,$00,$00 ; $73
+0827   0933 40 38 00 00 
+0828   0937 00 70 20 20  .DB $00,$70,$20,$20,$24,$58,$00,$00 ; $72
+0828   093B 24 58 00 00 
+0829   093F 04 3C 44 44  .DB $04,$3C,$44,$44,$44,$3C,$00,$00 ; $71
+0829   0943 44 3C 00 00 
+0830   0947 40 78 44 44  .DB $40,$78,$44,$44,$44,$78,$00,$00 ; $70
+0830   094B 44 78 00 00 
+0831   094F 00 38 44 44  .DB $00,$38,$44,$44,$44,$38,$00,$00 ; $6F
+0831   0953 44 38 00 00 
+0832   0957 00 48 48 48  .DB $00,$48,$48,$48,$48,$70,$00,$00 ; $6E
+0832   095B 48 70 00 00 
+0833   095F 00 44 44 54  .DB $00,$44,$44,$54,$54,$68,$00,$00 ; $6D
+0833   0963 54 68 00 00 
+0834   0967 00 18 10 10  .DB $00,$18,$10,$10,$10,$10,$10,$10 ; $6C
+0834   096B 10 10 10 10 
+0835   096F 00 48 50 60  .DB $00,$48,$50,$60,$50,$48,$40,$40 ; $6B
+0835   0973 50 48 40 40 
+0836   0977 30 48 08 08  .DB $30,$48,$08,$08,$08,$18,$00,$08 ; $6A
+0836   097B 08 18 00 08 
+0837   097F 00 18 10 10  .DB $00,$18,$10,$10,$10,$10,$00,$10 ; $69
+0837   0983 10 10 00 10 
+0838   0987 00 48 48 48  .DB $00,$48,$48,$48,$48,$70,$40,$40 ; $68
+0838   098B 48 70 40 40 
+0839   098F 38 04 3C 44  .DB $38,$04,$3C,$44,$44,$3C,$00,$00 ; $67
+0839   0993 44 3C 00 00 
+0840   0997 00 20 20 20  .DB $00,$20,$20,$20,$78,$20,$20,$18 ; $66
+0840   099B 78 20 20 18 
+0841   099F 00 38 40 78  .DB $00,$38,$40,$78,$44,$38,$00,$00 ; $65
+0841   09A3 44 38 00 00 
+0842   09A7 00 3C 44 44  .DB $00,$3C,$44,$44,$44,$3C,$04,$04 ; $64
+0842   09AB 44 3C 04 04 
+0843   09AF 00 38 44 40  .DB $00,$38,$44,$40,$44,$38,$00,$00 ; $63
+0843   09B3 44 38 00 00 
+0844   09B7 00 78 44 44  .DB $00,$78,$44,$44,$44,$78,$40,$40 ; $62
+0844   09BB 44 78 40 40 
+0845   09BF 00 3C 44 3C  .DB $00,$3C,$44,$3C,$04,$38,$00,$00 ; $61
+0845   09C3 04 38 00 00 
+0846   09C7 00 00 00 00  .DB $00,$00,$00,$00,$00,$10,$30,$30 ; $60
+0846   09CB 00 10 30 30 
+0847   09CF FC 00 00 00  .DB $FC,$00,$00,$00,$00,$00,$00,$00 ; $5F
+0847   09D3 00 00 00 00 
+0848   09D7 00 00 00 00  .DB $00,$00,$00,$00,$00,$44,$28,$10 ; $5E
+0848   09DB 00 44 28 10 
+0849   09DF 00 38 08 08  .DB $00,$38,$08,$08,$08,$08,$08,$38 ; $5D
+0849   09E3 08 08 08 38 
+0850   09E7 00 00 04 08  .DB $00,$00,$04,$08,$10,$20,$40,$00 ; $5C
+0850   09EB 10 20 40 00 
+0851   09EF 00 38 20 20  .DB $00,$38,$20,$20,$20,$20,$20,$38 ; $5B
+0851   09F3 20 20 20 38 
+0852   09F7 00 78 40 40  .DB $00,$78,$40,$40,$20,$10,$08,$78 ; $5A
+0852   09FB 20 10 08 78 
+0853   09FF 00 10 10 10  .DB $00,$10,$10,$10,$28,$44,$44,$44 ; $59
+0853   0A03 28 44 44 44 
+0854   0A07 00 44 44 28  .DB $00,$44,$44,$28,$10,$28,$44,$44 ; $58
+0854   0A0B 10 28 44 44 
+0855   0A0F 00 28 54 54  .DB $00,$28,$54,$54,$54,$54,$44,$44 ; $57
+0855   0A13 54 54 44 44 
+0856   0A17 00 10 28 44  .DB $00,$10,$28,$44,$44,$44,$44,$44 ; $56
+0856   0A1B 44 44 44 44 
+0857   0A1F 00 38 44 44  .DB $00,$38,$44,$44,$44,$44,$44,$44 ; $55
+0857   0A23 44 44 44 44 
+0858   0A27 00 10 10 10  .DB $00,$10,$10,$10,$10,$10,$10,$7C ; $54
+0858   0A2B 10 10 10 7C 
+0859   0A2F 00 38 44 04  .DB $00,$38,$44,$04,$38,$40,$44,$38 ; $53
+0859   0A33 38 40 44 38 
+0860   0A37 00 44 44 48  .DB $00,$44,$44,$48,$78,$44,$44,$78 ; $52
+0860   0A3B 78 44 44 78 
+0861   0A3F 00 34 48 54  .DB $00,$34,$48,$54,$44,$44,$44,$38 ; $51
+0861   0A43 44 44 44 38 
+0862   0A47 00 40 40 40  .DB $00,$40,$40,$40,$78,$44,$44,$78 ; $50
+0862   0A4B 78 44 44 78 
+0863   0A4F 00 38 44 44  .DB $00,$38,$44,$44,$44,$44,$44,$38 ; $4F
+0863   0A53 44 44 44 38 
+0864   0A57 00 44 44 44  .DB $00,$44,$44,$44,$4C,$54,$64,$44 ; $4E
+0864   0A5B 4C 54 64 44 
+0865   0A5F 00 44 44 44  .DB $00,$44,$44,$44,$44,$54,$6C,$44 ; $4D
+0865   0A63 44 54 6C 44 
+0866   0A67 00 7C 40 40  .DB $00,$7C,$40,$40,$40,$40,$40,$40 ; $4C
+0866   0A6B 40 40 40 40 
+0867   0A6F 00 44 48 50  .DB $00,$44,$48,$50,$60,$50,$48,$44 ; $4B
+0867   0A73 60 50 48 44 
+0868   0A77 00 38 44 44  .DB $00,$38,$44,$44,$04,$04,$04,$04 ; $4A
+0868   0A7B 04 04 04 04 
+0869   0A7F 00 38 10 10  .DB $00,$38,$10,$10,$10,$10,$10,$38 ; $49
+0869   0A83 10 10 10 38 
+0870   0A87 00 44 44 44  .DB $00,$44,$44,$44,$7C,$44,$44,$44 ; $48
+0870   0A8B 7C 44 44 44 
+0871   0A8F 00 3C 44 44  .DB $00,$3C,$44,$44,$5C,$40,$44,$38 ; $47
+0871   0A93 5C 40 44 38 
+0872   0A97 00 40 40 40  .DB $00,$40,$40,$40,$78,$40,$40,$7C ; $46
+0872   0A9B 78 40 40 7C 
+0873   0A9F 00 7C 40 40  .DB $00,$7C,$40,$40,$78,$40,$40,$7C ; $45
+0873   0AA3 78 40 40 7C 
+0874   0AA7 00 78 44 44  .DB $00,$78,$44,$44,$44,$44,$44,$78 ; $44
+0874   0AAB 44 44 44 78 
+0875   0AAF 00 38 44 40  .DB $00,$38,$44,$40,$40,$40,$44,$38 ; $43
+0875   0AB3 40 40 44 38 
+0876   0AB7 00 78 44 44  .DB $00,$78,$44,$44,$78,$44,$44,$78 ; $42
+0876   0ABB 78 44 44 78 
+0877   0ABF 00 44 44 7C  .DB $00,$44,$44,$7C,$44,$44,$44,$38 ; $41
+0877   0AC3 44 44 44 38 
+0878   0AC7 00 38 40 5C  .DB $00,$38,$40,$5C,$54,$5C,$44,$38 ; $40
+0878   0ACB 54 5C 44 38 
+0879   0ACF 00 10 00 10  .DB $00,$10,$00,$10,$18,$04,$44,$38 ; $3F
+0879   0AD3 18 04 44 38 
+0880   0AD7 00 20 10 08  .DB $00,$20,$10,$08,$04,$08,$10,$20 ; $3E
+0880   0ADB 04 08 10 20 
+0881   0ADF 00 00 7C 00  .DB $00,$00,$7C,$00,$00,$7C,$00,$00 ; $3D
+0881   0AE3 00 7C 00 00 
+0882   0AE7 00 08 10 20  .DB $00,$08,$10,$20,$40,$20,$10,$08 ; $3C
+0882   0AEB 40 20 10 08 
+0883   0AEF 20 30 30 00  .DB $20,$30,$30,$00,$30,$30,$00,$00 ; $3B
+0883   0AF3 30 30 00 00 
+0884   0AF7 00 30 30 00  .DB $00,$30,$30,$00,$30,$30,$00,$00 ; $3A
+0884   0AFB 30 30 00 00 
+0885   0AFF 00 30 08 04  .DB $00,$30,$08,$04,$3C,$44,$44,$38 ; $39
+0885   0B03 3C 44 44 38 
+0886   0B07 00 38 44 44  .DB $00,$38,$44,$44,$38,$44,$44,$38 ; $38
+0886   0B0B 38 44 44 38 
+0887   0B0F 00 20 20 20  .DB $00,$20,$20,$20,$10,$08,$04,$7C ; $37
+0887   0B13 10 08 04 7C 
+0888   0B17 00 38 44 44  .DB $00,$38,$44,$44,$78,$40,$20,$18 ; $36
+0888   0B1B 78 40 20 18 
+0889   0B1F 00 38 44 04  .DB $00,$38,$44,$04,$78,$40,$40,$7C ; $35
+0889   0B23 78 40 40 7C 
+0890   0B27 00 08 08 7C  .DB $00,$08,$08,$7C,$48,$28,$18,$08 ; $34
+0890   0B2B 48 28 18 08 
+0891   0B2F 00 38 44 04  .DB $00,$38,$44,$04,$38,$04,$44,$38 ; $33
+0891   0B33 38 04 44 38 
+0892   0B37 00 7C 40 20  .DB $00,$7C,$40,$20,$18,$04,$44,$38 ; $32
+0892   0B3B 18 04 44 38 
+0893   0B3F 00 38 10 10  .DB $00,$38,$10,$10,$10,$10,$30,$10 ; $31
+0893   0B43 10 10 30 10 
+0894   0B47 00 38 44 64  .DB $00,$38,$44,$64,$54,$4C,$44,$38 ; $30
+0894   0B4B 54 4C 44 38 
+0895   0B4F 00 00 40 20  .DB $00,$00,$40,$20,$10,$08,$04,$00 ; $2F
+0895   0B53 10 08 04 00 
+0896   0B57 00 30 30 00  .DB $00,$30,$30,$00,$00,$00,$00,$00 ; $2E
+0896   0B5B 00 00 00 00 
+0897   0B5F 00 00 00 00  .DB $00,$00,$00,$00,$7C,$00,$00,$00 ; $2D
+0897   0B63 7C 00 00 00 
+0898   0B67 20 30 30 00  .DB $20,$30,$30,$00,$00,$00,$00,$00 ; $2C
+0898   0B6B 00 00 00 00 
+0899   0B6F 00 00 10 10  .DB $00,$00,$10,$10,$7C,$10,$10,$00 ; $2B
+0899   0B73 7C 10 10 00 
+0900   0B77 00 00 28 38  .DB $00,$00,$28,$38,$7C,$38,$28,$00 ; $2A
+0900   0B7B 7C 38 28 00 
+0901   0B7F 00 20 10 10  .DB $00,$20,$10,$10,$10,$10,$10,$20 ; $29
+0901   0B83 10 10 10 20 
+0902   0B87 00 10 20 20  .DB $00,$10,$20,$20,$20,$20,$20,$10 ; $28
+0902   0B8B 20 20 20 10 
+0903   0B8F 00 00 00 00  .DB $00,$00,$00,$00,$00,$20,$30,$30 ; $27
+0903   0B93 00 20 30 30 
+0904   0B97 00 34 48 54  .DB $00,$34,$48,$54,$20,$50,$50,$20 ; $26
+0904   0B9B 20 50 50 20 
+0905   0B9F 00 4C 4C 20  .DB $00,$4C,$4C,$20,$10,$08,$64,$64 ; $25
+0905   0BA3 10 08 64 64 
+0906   0BA7 00 10 70 08  .DB $00,$10,$70,$08,$30,$40,$38,$20 ; $24
+0906   0BAB 30 40 38 20 
+0907   0BAF 00 28 7C 28  .DB $00,$28,$7C,$28,$28,$7C,$28,$00 ; $23
+0907   0BB3 28 7C 28 00 
+0908   0BB7 00 00 00 00  .DB $00,$00,$00,$00,$00,$48,$6C,$6C ; $22
+0908   0BBB 00 48 6C 6C 
+0909   0BBF 00 10 00 10  .DB $00,$10,$00,$10,$10,$38,$38,$10 ; $21
+0909   0BC3 10 38 38 10 
+0910   0BC7 00 00 00 00  .DB $00,$00,$00,$00,$00,$00,$00,$00 ; $20
+0910   0BCB 00 00 00 00 
+0911   0BCF 00 00 10 10  .DB $00,$00,$10,$10,$38,$38,$7C,$7C ; $1F
+0911   0BD3 38 38 7C 7C 
+0912   0BD7 00 00 7C 7C  .DB $00,$00,$7C,$7C,$38,$38,$10,$10 ; $1E
+0912   0BDB 38 38 10 10 
+0913   0BDF 00 00 28 28  .DB $00,$00,$28,$28,$7C,$28,$28,$00 ; $1D
+0913   0BE3 7C 28 28 00 
+0914   0BE7 00 7C 40 40  .DB $00,$7C,$40,$40,$40,$00,$00,$00 ; $1C
+0914   0BEB 40 00 00 00 
+0915   0BEF 00 00 10 30  .DB $00,$00,$10,$30,$7C,$30,$10,$00 ; $1B
+0915   0BF3 7C 30 10 00 
+0916   0BF7 00 00 10 18  .DB $00,$00,$10,$18,$7C,$18,$10,$00 ; $1A
+0916   0BFB 7C 18 10 00 
+0917   0BFF 00 10 38 7C  .DB $00,$10,$38,$7C,$10,$10,$10,$10 ; $19
+0917   0C03 10 10 10 10 
+0918   0C07 00 10 10 10  .DB $00,$10,$10,$10,$10,$7C,$38,$10 ; $18
+0918   0C0B 10 7C 38 10 
+0919   0C0F 38 10 38 7C  .DB $38,$10,$38,$7C,$10,$7C,$38,$10 ; $17
+0919   0C13 10 7C 38 10 
+0920   0C17 00 78 78 00  .DB $00,$78,$78,$00,$00,$00,$00,$00 ; $16
+0920   0C1B 00 00 00 00 
+0921   0C1F 00 38 44 18  .DB $00,$38,$44,$18,$28,$30,$44,$38 ; $15
+0921   0C23 28 30 44 38 
+0922   0C27 00 14 14 14  .DB $00,$14,$14,$14,$34,$54,$54,$3C ; $14
+0922   0C2B 34 54 54 3C 
+0923   0C2F 00 28 00 28  .DB $00,$28,$00,$28,$28,$28,$28,$28 ; $13
+0923   0C33 28 28 28 28 
+0924   0C37 00 10 38 7C  .DB $00,$10,$38,$7C,$10,$7C,$38,$10 ; $12
+0924   0C3B 10 7C 38 10 
+0925   0C3F 00 08 18 38  .DB $00,$08,$18,$38,$78,$38,$18,$08 ; $11
+0925   0C43 78 38 18 08 
+0926   0C47 00 20 30 38  .DB $00,$20,$30,$38,$3C,$38,$30,$20 ; $10
+0926   0C4B 3C 38 30 20 
+0927   0C4F 00 10 54 38  .DB $00,$10,$54,$38,$10,$38,$54,$10 ; $0F
+0927   0C53 10 38 54 10 
+0928   0C57 00 60 6C 2C  .DB $00,$60,$6C,$2C,$34,$2C,$34,$0C ; $0E
+0928   0C5B 34 2C 34 0C 
+0929   0C5F 00 60 70 30  .DB $00,$60,$70,$30,$10,$14,$18,$10 ; $0D
+0929   0C63 10 14 18 10 
+0930   0C67 00 10 38 10  .DB $00,$10,$38,$10,$38,$44,$44,$38 ; $0C
+0930   0C6B 38 44 44 38 
+0931   0C6F 00 30 48 48  .DB $00,$30,$48,$48,$34,$0C,$1C,$00 ; $0B
+0931   0C73 34 0C 1C 00 
+0932   0C77 FC FC 84 B4  .DB $FC,$FC,$84,$B4,$B4,$84,$FC,$FC ; $0A
+0932   0C7B B4 84 FC FC 
+0933   0C7F 00 00 78 48  .DB $00,$00,$78,$48,$48,$78,$00,$00 ; $09
+0933   0C83 48 78 00 00 
+0934   0C87 FC FC FC CC  .DB $FC,$FC,$FC,$CC,$CC,$FC,$FC,$FC ; $08
+0934   0C8B CC FC FC FC 
+0935   0C8F 00 00 00 30  .DB $00,$00,$00,$30,$30,$00,$00,$00 ; $07
+0935   0C93 30 00 00 00 
+0936   0C97 00 38 10 7C  .DB $00,$38,$10,$7C,$7C,$38,$10,$00 ; $06
+0936   0C9B 7C 38 10 00 
+0937   0C9F 00 10 7C 7C  .DB $00,$10,$7C,$7C,$10,$38,$38,$10 ; $05
+0937   0CA3 10 38 38 10 
+0938   0CA7 00 10 38 7C  .DB $00,$10,$38,$7C,$7C,$38,$10,$00 ; $04
+0938   0CAB 7C 38 10 00 
+0939   0CAF 00 10 38 7C  .DB $00,$10,$38,$7C,$7C,$7C,$28,$00 ; $03
+0939   0CB3 7C 7C 28 00 
+0940   0CB7 00 38 7C 44  .DB $00,$38,$7C,$44,$7C,$54,$7C,$38 ; $02
+0940   0CBB 7C 54 7C 38 
+0941   0CBF 00 38 44 54  .DB $00,$38,$44,$54,$44,$6C,$44,$38 ; $01
+0941   0CC3 44 6C 44 38 
+0942   0CC7 00 00 00 00  .DB $00,$00,$00,$00,$00,$00,$00,$00 ; $00
+0942   0CCB 00 00 00 00 
+0943   0CCF             
+0944   0CCF             .END
