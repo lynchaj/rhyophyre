@@ -146,14 +146,12 @@ void gdc_putc(byte command)
 {
     while (inp(gdc_status) & GDC_FIFO_FULL) ;	/* spin here */
     outp(gdc_command, command);
-    printf("\r\n%02X: ", command);
 }
 
 void gdc_putp(byte parameter)
 {
     while (inp(gdc_status) & GDC_FIFO_FULL) ;	/* spin here */
     outp(gdc_param, parameter);
-    printf("%02X ", parameter);
 }
 
 // Dan is using these parameters in t7220.asm:
@@ -234,7 +232,6 @@ void gdc_sync(byte enable)
 void gdc_reset(void)
 {
     outp(gdc_command, 0x00);	/* just jam it out */
-    printf("00:\r\n");
 /*    gdc_sync_params(); */
 }
 
@@ -694,7 +691,7 @@ void main(int argc, char* argv[])
     ramdac_set_read_mask(0x0F);
     ramdac_overlay(0);
 
-    gdc_init(1);
+    gdc_init(0);
 
 //    gdc_fill(0,0, Xmax-1, Ymax-1, 0);	/* clear the screen */
 //    gdc_fill(0,0, Xmax-1, Ymax-1, 0);	/* clear the screen */
