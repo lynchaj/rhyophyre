@@ -1,5 +1,0 @@
-(fp_lib_table
-  (lib (name mini-din)(type KiCad)(uri ${KIPRJMOD}/mini-din.pretty)(options "")(descr ""))
-  (lib (name molex-power)(type KiCad)(uri ${KIPRJMOD}/molex-power.pretty)(options "")(descr ""))
-  (lib (name w_conn_pc)(type KiCad)(uri ${KIPRJMOD}/w_conn_pc.pretty)(options "")(descr ""))
-)
