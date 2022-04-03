@@ -1,7 +1,8 @@
 # To compile using SDCC, add '-compiler=sdcc' to CC and remove -Werror from CFLAGS.
 
-CC=zcc +cpm
-CFLAGS := -O2 -Wall -Werror -DDEBUG=1
+CC=zcc +cpm -compiler=sdcc
+#CFLAGS := -O2 -DDEBUG=1 -Wall -Werror
+CFLAGS := -O2 -DDEBUG=1 -Wall
 
 all:	C7220.COM D7220.COM
 
