@@ -1,0 +1,13 @@
+(sym_lib_table
+  (lib (name Z180GDC-rescue)(type Legacy)(uri ${KIPRJMOD}/Z180GDC-rescue.lib)(options "")(descr ""))
+  (lib (name Z80KBDMSE-rescue)(type Legacy)(uri "C:/Users/Andrew/Desktop/System CD Updates/data/Z80MBC/Z80KBDMSE/Z80KBDMSE-rescue.lib")(options "")(descr ""))
+  (lib (name 00JRCsch)(type Legacy)(uri "C:/Users/Andrew/Desktop/System CD Updates/data/Z80MBC/Z80KBDMSE/00JRCsch.lib")(options "")(descr ""))
+  (lib (name ColorVDU-rescue)(type Legacy)(uri "C:/Users/Andrew/Desktop/System CD Updates/data/Z80MBC/Z80KBDMSE/ColorVDU-rescue.lib")(options "")(descr ""))
+  (lib (name Z80DUART2-rescue)(type Legacy)(uri "C:/Users/Andrew/Desktop/System CD Updates/data/Z80MBC/Z80DUART2/Z80DUART2-rescue.lib")(options "")(descr ""))
+  (lib (name conn1)(type Legacy)(uri "C:/Program Files/KiCad/share/library/conn.lib")(options "")(descr ""))
+  (lib (name device1)(type Legacy)(uri "C:/Program Files/KiCad/share/library/device.lib")(options "")(descr ""))
+  (lib (name uPD7220-V2-rescue)(type Legacy)(uri "C:/Users/Andrew/Desktop/System CD Updates/data/Old designs/ECB uPD7220 V2-002/ECB uPD7220 V2/uPD7220 V2-rescue.lib")(options "")(descr ""))
+  (lib (name power1)(type Legacy)(uri "C:/Program Files/KiCad/share/library/power.lib")(options "")(descr ""))
+  (lib (name memory1)(type Legacy)(uri "C:/Program Files/KiCad/share/library/memory.lib")(options "")(descr ""))
+  (lib (name brooktre1)(type Legacy)(uri "C:/Program Files/KiCad/share/library/brooktre.lib")(options "")(descr ""))
+)
