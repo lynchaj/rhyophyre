@@ -1,0 +1,2 @@
+set(CMAKE_C_OUTPUT_EXTENSION .o)
+
