@@ -8,6 +8,11 @@ const double_t PI = 3.14159;
 
 static int color_index = 0;
 
+#if 0
+extern long start_address;
+extern uint16_t Xmax, Ymax;
+#endif
+
 void draw_star(uint16_t x, uint16_t y, uint16_t length, int level)
 {
     double_t dbl_length = (double_t) length;
@@ -16,7 +21,7 @@ void draw_star(uint16_t x, uint16_t y, uint16_t length, int level)
     //printf("koch iteration: x = %d, y = %d, length = %d, level = %d\r\n", x, y, length, level);
 
     color_index++;
-    if (color_index > 8) color_index = 1;
+    if (color_index > 15) color_index = 1;
 
     color_setup(color_index);
 
@@ -42,17 +47,48 @@ void draw_star(uint16_t x, uint16_t y, uint16_t length, int level)
     draw_star(x, y, length / 3, level);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    const int do_init = 1;
     const int Xmax = 640, Ymax = 480;
-    if (!init_gdc_system(MODE_640X480)) { 
-        printf("Failed to initialize UPD7220 video.\n");
-        return 1;
+
+#if 0
+    start_address = 0;
+    //const int Xmax = 640, Ymax = 480;
+    Xmax = 640;
+    Ymax = 480;
+    int ch;
+    int do_init = 1, have_error = 0;
+    const char *optstring = "X";
+
+    for (int i = 0; i < argc; i++) {
+        printf("argv[%d] = '%s'\n", i, argv[i]);
+    }
+
+    while ((ch = getopt(argc, argv, optstring)) != -1) {
+        printf("ch = '%c'\n", ch);
+        switch (ch) {
+            case 'X':
+            case 'x':
+                do_init = 0;
+                break;
+            case '?':
+            default:
+                have_error = 1;
+                break;
+        }
+        if (have_error) break;
+    }
+#endif
+    if (do_init) {
+        printf("Initializing video system...\n");
+        if (!init_gdc_system(MODE_640X480)) {
+            printf("Failed to initialize UPD7220 video.\n");
+            return 1;
+        }
     }
 
     draw_star(Xmax/2, Ymax/2, 150, 0);
 
     return 0;
 }
-
-
