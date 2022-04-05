@@ -1,22 +1,24 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <conio.h>
 #include "rhyophyre.h"
 
 #include "gdc7220.h"
 
-#define abs(v) ((v)<0?-(v):(v))
+#define NUM_PLANES 4
+#define UPD7220A   1
 
 /* the GDC 7220 status bits:   */
-#define GDC_DATA_READY		0x01
-#define GDC_FIFO_FULL		0x02
-#define GDC_FIFO_EMPTY		0x04
-#define GDC_DRAWING		0x08
-#define GDC_DMA_EXEC		0x10
-#define GDC_VERT_SYNC		0x20
-#define GDC_HORIZ_SYNC		0x40
-#define GDC_LIGHT_PEN		0x80
+typedef enum GDC_Status {
+//  GDC_DATA_READY		= 0x01,
+    GDC_FIFO_FULL		= 0x02,
+    GDC_FIFO_EMPTY		= 0x04,
+    GDC_DRAWING		    = 0x08,
+//  GDC_DMA_EXEC		= 0x10,
+//  GDC_VERT_SYNC		= 0x20,
+//  GDC_HORIZ_SYNC		= 0x40,
+//  GDC_LIGHT_PEN		= 0x80,
+} GDC_Status;
 
 /* GDC 7220 mode bits:   0 0 C F I D G S */
 #define Graphics 0x12
@@ -24,6 +26,38 @@
 /* Latch bits */
 #define LATCH_RAMDAC_256      0x80     /* 256 color mode */
 #define LATCH_OVERLAY_MASK    0x0F     /* 4 overlay bits */
+
+typedef enum GDC_Command {
+    GDC_CMD_RESET                 = 0x0,
+    GDC_CMD_SYNC_AND_ENABLE       = 0xF,
+    GDC_CMD_SYNC_AND_DISABLE      = 0xE,
+    GDC_CMD_DISPLAY_ENABLE        = 0xD,
+    GDC_CMD_DISPLAY_BLANK         = 0xC,
+    GDC_CMD_ZOOM                  = 0x46,
+    GDC_CMD_PITCH                 = 0x47,
+    GDC_CMD_CCHAR                 = 0x4B, /* Cursor & CHARacter info */
+    GDC_CMD_CURS                  = 0x49, /* CURsor Specify */
+    GDC_CMD_FIGS                  = 0x4C, /* FIGure Specify */
+    GDC_CMD_FIGD                  = 0x6C, /* FIGure Draw */
+    GDC_CMD_VSYNC_MODE_SECONDARY  = 0x6E,
+    GDC_CMD_VSYNC_MODE_PRIMARY    = 0x6F,
+    GDC_CMD_WDAT_WORD_REPLACE     = 0x20,
+/*
+    GDC_CMD_WDAT_LBYTE_REPLACE    = 0x30,
+    GDC_CMD_WDAT_HBYTE_REPLACE    = 0x38,
+    GDC_CMD_WDAT_WORD_COMPLEMENT  = 0x21,
+    GDC_CMD_WDAT_LBYTE_COMPLEMENT = 0x31,
+    GDC_CMD_WDAT_HBYTE_COMPLEMENT = 0x39,
+    GDC_CMD_WDAT_WORD_RESET       = 0x22,
+    GDC_CMD_WDAT_LBYTE_RESET      = 0x32,
+    GDC_CMD_WDAT_HBYTE_RESET      = 0x3A,
+    GDC_CMD_WDAT_WORD_SET         = 0x23,
+    GDC_CMD_WDAT_LBYTE_SET        = 0x33,
+    GDC_CMD_WDAT_HBYTE_SET        = 0x3B,
+*/
+} GDC_Command;
+
+
 
 unsigned char dbglvl;
 uint16_t Xmax, Ymax, Ypitch;	/* all in pixels */
@@ -209,30 +243,34 @@ void gdc_sync_params(void)
 /* enable/blank display:  1/0 */
 void gdc_display(uint8_t enable)
 {
-    gdc_putc(0x0C | enable);
+    gdc_putc(enable ? GDC_CMD_DISPLAY_ENABLE : GDC_CMD_DISPLAY_BLANK);
 }
 
 /* enable/blank display:  1/0 */
 void gdc_sync(uint8_t enable)
 {
-    gdc_putc(0x0E | enable);
+    gdc_putc(enable ? GDC_CMD_SYNC_AND_ENABLE : GDC_CMD_SYNC_AND_DISABLE);
     gdc_sync_params();
 }
 
 void gdc_reset(void)
 {
-    outp(gdc_command, 0x00);	/* just jam it out */
-/*    gdc_sync_params(); */
+#if UPD7220A
+    outp(gdc_command, GDC_CMD_RESET + 3);	/* Just jam it out. But don't blank or rsync */
+#else
+    outp(gdc_command, GDC_CMD_RESET);	/* just jam it out */
+#endif
 }
 
-void gdc_vsync(uint8_t master)
+void gdc_vsync(uint8_t primary)
 {
-    gdc_putc(0x6E | master);
+    gdc_putc(primary ? GDC_CMD_VSYNC_MODE_PRIMARY : GDC_CMD_VSYNC_MODE_SECONDARY);
 }
 
 void gdc_cchar(void)
 {
-    gdc_putc(0x4B);
+    /* We use graphics mode exclusively, so set everything to zero. */
+    gdc_putc(GDC_CMD_CCHAR);
     gdc_putp(0);
     gdc_putp(0);
     gdc_putp(0);
@@ -240,7 +278,7 @@ void gdc_cchar(void)
 
 void gdc_pitch(uint8_t pitch)
 {
-    gdc_putc(0x47);
+    gdc_putc(GDC_CMD_PITCH);
     gdc_putp(pitch);
 }
 
@@ -257,16 +295,24 @@ void gdc_pattern(uint16_t pattern)
 
 void gdc_zoom_display(uint8_t factor)
 {
-    gdc_putc(0x46);
+    gdc_putc(GDC_CMD_ZOOM);
     gdc_putp((Zoom_Draw-1) | ((factor-1)<<4));
     Zoom_Display = factor;
 }
 
 void gdc_zoom_draw(uint8_t factor)
 {
-    gdc_putc(0x46);
+    gdc_putc(GDC_CMD_ZOOM);
     gdc_putp((factor-1) | ((Zoom_Display-1)<<4));
     Zoom_Draw = factor;
+}
+
+void gdc_setcursor_by_addr(uint32_t address)
+{
+    gdc_putc(GDC_CMD_CURS);	/* CURS command */
+    gdc_putp((uint8_t)address);
+    gdc_putp((uint8_t)(address>>8));
+    gdc_putp((uint8_t)( (address>>16) & 3 ) );
 }
 
 /* void gdc_curs(void); */
@@ -280,11 +326,23 @@ void gdc_setcursor(uint16_t X, uint16_t Y)	/* set the graphic cursor position */
 
     gdc_putc(0x49);	/* CURS command */
     gdc_putp((uint8_t)address);
-    gdc_putp((uint8_t)(address>>8));
-    gdc_putp((uint8_t)((address>>16)&3 | (X<<4)));
+    gdc_putp((uint8_t)( address >> 8 ) );
+    gdc_putp((uint8_t)( ( ( address >> 16 ) & 3 ) | ( X << 4 )));
     currX = X;
     currY = Y;
 }
+
+#if 0
+void gdc_setcursor2(uint32_t plane_address_in, uint16_t X, uint16_t Y)	/* set the graphic cursor position */
+{
+    uint16_t offset = Y * Ypitch_wds + (X >> 4);
+    uint32_t address = plane_address_in + offset;
+
+    gdc_setcursor_by_addr(address);
+    currX = X;
+    currY = Y;
+}
+#endif
 
 void gdc_start(void)
 {
@@ -305,7 +363,6 @@ void gdc_mode(int mode)
     Mode = mode;
 }
 
-
 void gdc_config_display_area(int area_num, uint32_t address, uint16_t length, uint8_t wide)
 {
     assert(area_num > 0 && area_num < 2);
@@ -320,33 +377,17 @@ void gdc_config_display_area(int area_num, uint32_t address, uint16_t length, ui
 /* init GDC, enable/blank the screen 1/0 */
 void gdc_init(uint8_t enable)
 {
-    Mode = GDC_XOR;
     gdc_reset();
     gdc_sync(enable);
     gdc_vsync(1);
     gdc_cchar();
-    Ypitch_wds = Ypitch/16;
     gdc_pitch(Ypitch_wds);
 
-/*    gdc_pram(0, param_0, sizeof(param_0)); */
-#if 0
-    area.address_lo = start_address;
-    area.address_hi = start_address>>16;
-    area.length_lo = Ymax;
-    area.length_hi = Ymax>>4;
-    area.IM = 0;
-    area.WD = 0;
-    gdc_pram(0, (uint8_t*)&area, sizeof(area));		/* graphic area 1 */
-    gdc_pram(sizeof(area), (uint8_t*)&area, sizeof(area));    /* graphic area 2 */
-#endif
     gdc_config_display_area(0, start_address, Ymax, 0);
     gdc_config_display_area(1, start_address, Ymax, 0);
     gdc_pattern(0xFFFF);
     
-    Zoom_Draw = 1;
     gdc_zoom_display(1);
-/*    gdc_curs(); */
-    currX = 1;
     gdc_setcursor(0, 0);
     gdc_mode(GDC_REPLACE);
     gdc_start();
@@ -364,7 +405,38 @@ void gdc_Dparam(int D, uint8_t OR)
 {
     gdc_putp((uint8_t)D);
     D >>= 8;
-    gdc_putp((uint8_t)((uint8_t)D & 0x3F | OR));
+    gdc_putp((uint8_t)((uint8_t)(D & 0x3F) | OR));
+}
+
+void gdc_clear_screen()
+{
+    for (int plane = 0; plane < NUM_PLANES; plane++) {
+        uint16_t words_left = Xmax >> 4;
+        words_left = words_left * Ymax;
+        uint32_t cursor_addr = plane_address[plane];
+        while (words_left > 0) {
+            gdc_setcursor_by_addr(cursor_addr);
+
+            uint16_t word_count = words_left > 16384 ? 16384 : words_left;
+            words_left =  words_left - word_count;
+            cursor_addr += word_count;
+            word_count--;
+
+            uint8_t word_count_low = (uint8_t)(word_count & 0xFF);
+            uint8_t word_count_hi = (uint8_t)((word_count >> 8) & 0x3F);
+
+            gdc_mask(0xFFFF);
+
+            gdc_putc(GDC_CMD_FIGS);    /* FIGS for WDAT */
+            gdc_putp(2);    /* direction 2 */
+            gdc_putp(word_count_low);
+            gdc_putp(word_count_hi);
+
+            gdc_putc(GDC_CMD_WDAT_WORD_REPLACE);    /* WDAT full uint16_t */
+            gdc_putp(0x00);    /* LSB only */
+            gdc_putp(0x00);    /* LSB only */
+        }
+    }
 }
 
 void gdc_hline(int x1, int x2, int y, uint8_t mode)
@@ -384,8 +456,9 @@ void gdc_hline(int x1, int x2, int y, uint8_t mode)
         mask <<= temp;
         if (x1/16 < x2/16) {
             gdc_mask(mask);
-            gdc_putc(0x4C);	/* FIGS for WDAT */
+            gdc_putc(GDC_CMD_FIGS);	/* FIGS for WDAT */
             gdc_putp(2);	/* direction 2 */
+
             gdc_putc(0x20 | mode);	/* WDAT full uint16_t */
             gdc_putp(0xFF);	/* LSB only */
             gdc_putp(0xFF);	/* LSB only */
@@ -399,9 +472,9 @@ void gdc_hline(int x1, int x2, int y, uint8_t mode)
     }
     if ( (temp = (x2/16) - (x1/16)) > 0 ) {
         gdc_mask(mask);
-        gdc_putc(0x4C);	/* FIGS for WDAT */
+        gdc_putc(GDC_CMD_FIGS);	/* FIGS for WDAT */
         gdc_putp(2);	/* direction 2 */
-        gdc_Dparam((uint16_t)temp, 0);
+        gdc_Dparam((int)temp, 0);
         gdc_putc(0x20 | mode);	/* WDAT full uint16_t */
         gdc_putp(0xFF);	/* LSB only */
         gdc_putp(0xFF);	/* LSB only */
@@ -409,7 +482,7 @@ void gdc_hline(int x1, int x2, int y, uint8_t mode)
     }    
     if ( (mask = mask & maskf) != 0xFFFFu) {
         gdc_mask(mask);
-        gdc_putc(0x4C);	/* FIGS for WDAT */
+        gdc_putc(GDC_CMD_FIGS);	/* FIGS for WDAT */
         gdc_putp(2);	/* direction 2 */
         gdc_putc(0x20 | mode);	/* WDAT lo-uint8_t */
         gdc_putp(0xFF);	/* LSB only */
@@ -445,7 +518,7 @@ void gdc_line(int x1, int y1, int x2, int y2)
     }
     D1 += D1;		/* double it */
     dir = tran[dir] | (dx==dy);
-    gdc_putc(0x4C);	/* FIGS command */
+    gdc_putc(GDC_CMD_FIGS);	/* FIGS command */
     gdc_putp(dir | 8);	/* LINE mode */
     D = D1 - DC;
     D2 = D - DC;
@@ -454,12 +527,13 @@ void gdc_line(int x1, int y1, int x2, int y2)
     gdc_Dparam(D, 0);
     gdc_Dparam(D2, 0);
     gdc_Dparam(D1, 0);
-    gdc_putc(0x6C);	/* FIGD command */
+    gdc_putc(GDC_CMD_FIGD);
     currX = x2;
     currY = y2;
 }
 
 static const uint8_t Fill[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+#if 0
 void gdc_fill(int x1, int y1, int x2, int y2, uint8_t color)
 {
     uint8_t mode = Mode;
@@ -481,7 +555,7 @@ void gdc_fill(int x1, int y1, int x2, int y2, uint8_t color)
     }
     gdc_setcursor((uint16_t)x1, (uint16_t)y1);
     
-    gdc_putc(0x4C);	/* FIGS command */
+    gdc_putc(GDC_CMD_FIGS);	/* FIGS command */
     gdc_putp(0x10);	/* DIR=0, GC=1 */
     DC = x2 - x1;	/* Perp. pix - 1 */
     D = y2 - y1 + 1;	/* Initial dir pix */
@@ -515,7 +589,7 @@ void gdc_fill2(int x1, int y1, int x2, int y2, uint8_t color)
     
     gdc_mode(mode);
 }
-
+#endif
 void gchar_test(void)
 {
 /*	x x x x x x x x
@@ -540,7 +614,7 @@ static const uint8_t patt[8] = {0xff, 0x9f, 0x87, 0x8b,
         gdc_pram(8, patt, 8);
         gdc_setcursor(x+i*delta, y);
         gdc_mode(GDC_REPLACE);
-        gdc_putc(0x4C);		/* FIGS command */
+        gdc_putc(GDC_CMD_FIGS);		/* FIGS command */
         gdc_putp(0x10 + i);	/* GC + dir */
         gdc_Dparam(7, 0);	/* perp. pix - 1 */
         gdc_Dparam(8, 0);	/* initial dir pix */
@@ -576,7 +650,7 @@ void color_line(int x1, int y1, int x2, int y2)
     uint8_t mask = 1;
     uint8_t color;
 
-    for (count = 0; count < 4; ++count, mask<<=1) {
+    for (count = 0; count < NUM_PLANES; ++count, mask<<=1) {
         start_address = plane_address[count];
         color = color_Color & mask;
         switch(color_Modus) {
@@ -602,6 +676,8 @@ void color_line(int x1, int y1, int x2, int y2)
     }
 }
 
+#if 0
+
 void color_fill(int x1, int y1, int x2, int y2, uint8_t color)
 {
     int temp;
@@ -625,7 +701,7 @@ void color_fill(int x1, int y1, int x2, int y2, uint8_t color)
         }
         gdc_setcursor((uint16_t)x1, (uint16_t)y1);
    
-        gdc_putc(0x4C);	/* FIGS command */
+        gdc_putc(GDC_CMD_FIGS);	/* FIGS command */
         gdc_putp(0x10);	/* DIR=0, GC=1 */
         DC = x2 - x1;	/* Perp. pix - 1 */
         D = y2 - y1 + 1;	/* Initial dir pix */
@@ -657,15 +733,21 @@ void color_fill2(int x1, int y1, int x2, int y2, uint8_t color)
     for (; y1<=y2; y1++) color_line(x1, y1, x2, y1);
 }
 
+#endif
+
 int init_gdc_system(uint8_t video_mode)
 {
     start_address = 0;	/* start of graphic area in display memory */
     dbglvl = DEBUG;
+    Mode = GDC_XOR;
+    Zoom_Draw = 1;
+    currX = 1;
 
     if (video_mode == MODE_640X480) { 
         Xmax = 640;  // only with 25.175 MHz pix-clock
         Ymax = 480;
         Ypitch = 640;       /* must fit in 32K x 16 */
+        Ypitch_wds = Ypitch/16;
 
         HFP = 2;  // Horizontal front porch
         HS  = 5;  // Horizontal Sync
@@ -695,11 +777,9 @@ int init_gdc_system(uint8_t video_mode)
 
     gdc_init(0);
 
-    color_fill2(0,0, Xmax-1, Ymax-1, 0);	/* clear the screen */
+    gdc_clear_screen();
 
     gdc_display(1);	/* unblank the display */
-
-    start_address = 0;
 
     gdc_pattern(0xFFFF);
 

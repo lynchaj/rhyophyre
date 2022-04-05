@@ -38,6 +38,7 @@ extern "C" {
     void    color_line(int x1, int y1, int x2, int y2);
     uint8_t color_mode(uint8_t mode);
     uint8_t color_setup(uint8_t color);
+    void    gdc_clear_screen(void);
     void    gdc_done(void);
     void    gdc_hline(int x1, int x2, int y, uint8_t mode);
     void    gdc_pattern(uint16_t pattern);
