@@ -9,13 +9,15 @@ include(./cmake/macros.cmake)
 
 add_executable(koch koch.c gdc7220.c)
 add_executable(d7220 d7220.c gdc7220.c)
+add_executable(showpcx showpcx.c pcx.c gdc7220.c)
 
 add_compile_flags(C
     +cpm
 #    -compiler=sdcc
+    -O2
     -Wall
     -I$ENV{Z88DK_HOME}/include
-    -lmath48
+#    -lmath48
     -DDEBUG=1
     # -debug
     # https://github.com/z88dk/z88dk/wiki/Classic-allocation#automatic-heap-configuration

@@ -70,20 +70,13 @@ uint16_t currX, currY;
 
 uint8_t color_Color, color_Modus;
 /* for the prototype board with reversed address lines:    */
-long plane_address[4] = { 0L, 2L<<16, 1L<<16, 3L<<16 };
+//long plane_address[4] = { 0L, 2L<<16, 1L<<16, 3L<<16 };
 /* for the production board with coherent address lines:   */
-// long plane_address[4] = { 0L, 2L<<16, 1L<<16, 3L<<16 };
+long plane_address[4] = { 0L, 1L<<16, 2L<<16, 3L<<16 };
 
-typedef
-uint16_t Colors[3];
-
-typedef
-Colors Palette[16];
-
-enum {Red=0, Green, Blue};
-
+#if 1
 static
-Palette default_palette = { 
+PaletteEntry default_palette[] = {
    {  0,   0,   0},
    {  0,   0, 128},
    {  0, 128,   0},
@@ -99,28 +92,51 @@ Palette default_palette = {
    {255,   0,   0},
    {255,   0, 255},
    {255, 255,   0},
-   {255, 255, 255} };
+   {255, 255, 255}
+};
+#endif
+#if 0
+static PaletteEntry default_palette[] = {
+        //{204, 170, 136},
+        {210, 180, 140},
+        {204, 187, 170},
+        {170, 153, 85},
+        {102, 102, 102},
 
-
+        {85,  85,  85},
+        {17,  34,  34},
+        {51,  51,  51},
+        {170, 187, 170},
+        {68,  153, 153},
+        {0, 0, 0},
+        {85,  136, 102},
+        {17,  85,  68},
+        {17,  68,  51},
+        {34,  136, 102},
+        {17,  136, 102},
+        {255, 255, 255}
+};
+#endif
 void ramdac_overlay(uint8_t overlay)
 {
-   outp(ramdac_latch, (overlay & LATCH_OVERLAY_MASK) | LATCH_RAMDAC_256 );
+   outp(ramdac_latch, (overlay & LATCH_OVERLAY_MASK) | LATCH_RAMDAC_256);
 }
 
-void ramdac_set_overlay_color(uint8_t overlay, Colors color)
+void ramdac_set_overlay_color(uint8_t overlay, PaletteEntry color)
 {
    outp(ramdac_overlay_wr, overlay);
-   outp(ramdac_overlay_ram, color[Red]);
-   outp(ramdac_overlay_ram, color[Green]);
-   outp(ramdac_overlay_ram, color[Blue]);
+   outp(ramdac_overlay_ram, color.Red);
+   outp(ramdac_overlay_ram, color.Green);
+   outp(ramdac_overlay_ram, color.Blue);
 }
 
-void ramdac_set_palette_color(uint8_t index, Colors color)
+void ramdac_set_palette_color(uint8_t index, PaletteEntry color)
 {
    outp(ramdac_address_wr, index);
-   outp(ramdac_palette_ram, color[Red]);
-   outp(ramdac_palette_ram, color[Green]);
-   outp(ramdac_palette_ram, color[Blue]);
+   outp(ramdac_palette_ram, color.Red);
+   outp(ramdac_palette_ram, color.Green);
+   outp(ramdac_palette_ram, color.Blue);
+   //printf("RAMDAC: set color %d: R=%d, G=%d, B=%d\n", index, color.Red, color.Green, color.Blue);
 }
 
 void ramdac_set_read_mask(uint8_t mask)
@@ -241,7 +257,7 @@ void gdc_sync_params(void)
 }
 
 /* enable/blank display:  1/0 */
-void gdc_display(uint8_t enable)
+void gdc_display(int enable)
 {
     gdc_putc(enable ? GDC_CMD_DISPLAY_ENABLE : GDC_CMD_DISPLAY_BLANK);
 }
@@ -307,12 +323,12 @@ void gdc_zoom_draw(uint8_t factor)
     Zoom_Draw = factor;
 }
 
-void gdc_setcursor_by_addr(uint32_t address)
+void gdc_setcursor_by_addr(uint32_t address, int wg_bit)
 {
     gdc_putc(GDC_CMD_CURS);	/* CURS command */
     gdc_putp((uint8_t)address);
     gdc_putp((uint8_t)(address>>8));
-    gdc_putp((uint8_t)( (address>>16) & 3 ) );
+    gdc_putp((uint8_t)( ( wg_bit << 3 ) | ((address>>16) & 3) ) );
 }
 
 /* void gdc_curs(void); */
@@ -408,6 +424,23 @@ void gdc_Dparam(int D, uint8_t OR)
     gdc_putp((uint8_t)((uint8_t)(D & 0x3F) | OR));
 }
 
+void gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, uint16_t num_words)
+{
+    gdc_setcursor_by_addr(plane_address[plane_num] + offset, 1); /* set the wg bit */
+    gdc_mask(0xFFFF);
+
+    gdc_putc(GDC_CMD_FIGS);    /* FIGS for WDAT */
+    gdc_putp(2);    /* direction 2 */
+    gdc_putp(0); /* word count = 0 */
+    gdc_putp(0); /* word count = 0 */
+    gdc_putc(GDC_CMD_WDAT_WORD_REPLACE);    /* WDAT full uint16_t */
+
+    for (int i = 0; i < num_words; i++) {
+        gdc_putp(buf[i] & 0xff);
+        gdc_putp(buf[i] >> 8);
+    }
+}
+
 void gdc_clear_screen()
 {
     for (int plane = 0; plane < NUM_PLANES; plane++) {
@@ -415,7 +448,7 @@ void gdc_clear_screen()
         words_left = words_left * Ymax;
         uint32_t cursor_addr = plane_address[plane];
         while (words_left > 0) {
-            gdc_setcursor_by_addr(cursor_addr);
+            gdc_setcursor_by_addr(cursor_addr, 0);
 
             uint16_t word_count = words_left > 16384 ? 16384 : words_left;
             words_left =  words_left - word_count;
