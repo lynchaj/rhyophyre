@@ -1,9 +1,47 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "gdc7220.h"
 
-int main(void)
+/* Write a checkboard pattern as a video stress test. */
+void write_checkboard_pattern() {
+    uint16_t temp_buf[19200];
+    uint16_t *t = temp_buf;
+    for (uint16_t y = 0; y < 480; y++) {
+        for (uint16_t x = 0; x < 640/16; x++) {
+            *t++ = y % 2 == 1 ? 0xAAAA : 0x5555;
+        }
+    }
+    for (int i = 0; i < 4; i++) {
+        gdc_write_plane(i, 0, temp_buf, 19200);
+    }
+}
+
+int main(int argc, char *argv[])
 {
-    int x1, x2, y;
+    int x1, x2, y, ch, do_checkboard = 0, have_error = 0;
+
+    const char *optstring = "C";
+
+    while ((ch = getopt(argc, argv, optstring)) != -1) {
+        switch (ch) {
+            case 'C':
+            case 'c':
+                do_checkboard = 1;
+                break;
+            case '?':
+            default:
+                have_error = 1;
+                break;
+        }
+        if (have_error) break;
+    }
+
+    if (do_checkboard) {
+        printf("Writing checkboard pattern.\r\n");
+        write_checkboard_pattern();
+        return 0;
+    }
+
     printf("Start test of upd7220.\n");
 
     const int Xmax = 640, Ymax = 480;
@@ -93,10 +131,10 @@ int main(void)
 
     color_mode(GDC_OR);
     color_line(638, 379, 638, 324);
-    
+
     gdc_done();
     printf("\nEnd test of uPD7220\n");
-    
+
     return 0;
 }
 

@@ -32,18 +32,26 @@
 #define MODE_800x600    2
 #define MODE_1024x768   3
 
+typedef struct PaletteEntry {
+    uint8_t Red, Green, Blue;
+} PaletteEntry;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
     void    color_line(int x1, int y1, int x2, int y2);
     uint8_t color_mode(uint8_t mode);
     uint8_t color_setup(uint8_t color);
+    void    gchar_test(void);
     void    gdc_clear_screen(void);
+    void    gdc_display(int enable);
     void    gdc_done(void);
     void    gdc_hline(int x1, int x2, int y, uint8_t mode);
     void    gdc_pattern(uint16_t pattern);
+    void    gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, uint16_t num_words);
     int     init_gdc_system(uint8_t video_mode);
-    void    gchar_test(void);
+    void    ramdac_set_palette_color(uint8_t index, PaletteEntry color);
+
 #ifdef __cplusplus
 }
 #endif
