@@ -16,6 +16,8 @@ Important construction notes:
 - lift pins 10 and 12 on U20 (74LS06 next to VT82C42) so they're not generating spurious interrupts.  They'll share INT1# with option jumpers on V2
 - U6 should be 74F32 not 74LS32, otherwise affects color palette
 - if you are seeing flicker in resulting image running test programs (D7220 or T7220) try substituting a 74LS04 for 74F04 in U47.  This eliminated flicker on my Z180GDC V1 and dramatically improved picture quality & stability
+- replace R20 with 220 ohm resistor since using the 2200 ohm resistor is too high and makes HSYNC edges too dull.  Lower resistor value improves HSYNC edge sharpness
+- Add 0.1 uF bypass capacitor behind X4 oscillator on copper side of board.  The intended C110 bypass capacitor drifted too far away from X4 and PIX-CLK gets noise jitter
 
 
 
