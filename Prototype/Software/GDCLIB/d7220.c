@@ -3,6 +3,7 @@
 #include "gdc7220.h"
 
 /* Write a checkboard pattern as a video stress test. */
+
 void write_checkboard_pattern() {
     uint16_t temp_buf[19200];
     uint16_t *t = temp_buf;
@@ -16,50 +17,9 @@ void write_checkboard_pattern() {
     }
 }
 
-int main(int argc, char *argv[])
+void draw(void)
 {
-    int x1, x2, y, ch, do_checkboard = 0, have_error = 0;
-
-    const char *optstring = "C";
-
-    while ((ch = getopt(argc, argv, optstring)) != -1) {
-        switch (ch) {
-            case 'C':
-            case 'c':
-                do_checkboard = 1;
-                break;
-            case '?':
-            default:
-                have_error = 1;
-                break;
-        }
-        if (have_error) break;
-    }
-
-    if (do_checkboard) {
-        printf("Writing checkboard pattern.\r\n");
-        write_checkboard_pattern();
-        return 0;
-    }
-
-    printf("Start test of upd7220.\n");
-
-    const int Xmax = 640, Ymax = 480;
-
-    if (!init_gdc_system(MODE_640X480)) {
-        printf("Failed to initialize UPD7220 video.\n");
-        return 1;
-    }
-
-    color_setup(CLR_GREEN);
-    color_line(Xmax-1, Ymax-1, Xmax-1, 0);
-    color_setup(CLR_BR_RED);
-    color_line(Xmax-1, 0, 0, 0);
-    color_setup(CLR_BR_BLUE);
-    color_line(0, 0, 0, Ymax-1);
-    color_setup(CLR_MAGENTA);
-    color_line(0, Ymax-1, Xmax-1, Ymax-1);
-     
+    int x1, x2, y;
 
     color_mode(GDC_REPLACE);
     color_setup(CLR_BR_YELLOW);
@@ -132,9 +92,91 @@ int main(int argc, char *argv[])
     color_mode(GDC_OR);
     color_line(638, 379, 638, 324);
 
-    gdc_done();
-    printf("\nEnd test of uPD7220\n");
-
-    return 0;
+    return;
 }
 
+void delay(uint16_t n)
+{
+	for (int i = 0; i < n; i++)
+		inp(0);
+}
+
+void waitkey(void)
+{
+	printf("Press <return> to continue...");
+	getchar();
+}
+
+int main(int argc, char *argv[])
+{
+    int ch, do_checkboard = 0, have_error = 0;
+
+    const char *optstring = "C";
+
+    while ((ch = getopt(argc, argv, optstring)) != -1) {
+        switch (ch) {
+            case 'C':
+            case 'c':
+                do_checkboard = 1;
+                break;
+            case '?':
+            default:
+                have_error = 1;
+                break;
+        }
+        if (have_error) break;
+    }
+
+    printf("Start test of upd7220.\n");
+
+    // const int Xmax = 640, Ymax = 480;
+	// const int Ytot = (32 * 1024 * 16) / (uint32_t)Xmax;
+
+    if (!init_gdc_system(MODE_640X480)) {
+        printf("Failed to initialize UPD7220 video.\n");
+        return 1;
+    }
+
+    if (do_checkboard) {
+        printf("Writing checkboard pattern.\r\n");
+        write_checkboard_pattern();
+        return 0;
+    }
+
+    color_setup(CLR_GREEN);
+    color_line(Xmax-1, Ymax-1, Xmax-1, 0);
+    color_setup(CLR_BR_RED);
+    color_line(Xmax-1, 0, 0, 0);
+    color_setup(CLR_BR_BLUE);
+    color_line(0, 0, 0, Ymax-1);
+    color_setup(CLR_MAGENTA);
+    color_line(0, Ymax-1, Xmax-1, Ymax-1);
+     
+	draw();
+	waitkey();
+	
+	// gdc_clear_lines(100, 100);
+	// waitkey();
+
+	for (int i = 0; i < (Ytot + 100); i++)
+	{
+		delay(1000);
+		gdc_scroll(1);
+	}
+	waitkey();
+	
+	// gdc_clear_screen(0);
+	// draw();
+	// waitkey();
+	
+	for (int i = 0; i < (Ytot + 100); i++)
+	{
+		delay(1000);
+		gdc_scroll(-1);
+	}
+
+    gdc_done();
+    printf("\nEnd test of uPD7220\n");
+    
+    return 0;
+}

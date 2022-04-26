@@ -39,18 +39,23 @@ typedef struct PaletteEntry {
 #ifdef __cplusplus
 extern "C" {
 #endif
+	
+	extern uint16_t	Xmax, Ymax, Ytot;
+	
     void    color_line(int x1, int y1, int x2, int y2);
     uint8_t color_mode(uint8_t mode);
     uint8_t color_setup(uint8_t color);
     void    gchar_test(void);
-    void    gdc_clear_screen(void);
+    void    gdc_clear_screen(int full);
+	void	gdc_clear_lines(uint16_t start_line, uint16_t line_count);
     void    gdc_display(int enable);
     void    gdc_done(void);
     void    gdc_hline(int x1, int x2, int y, uint8_t mode);
     void    gdc_pattern(uint16_t pattern);
     void    gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, uint16_t num_words);
+    void    gdc_scroll(int16_t lines);
     int     init_gdc_system(uint8_t video_mode);
-    void    ramdac_set_palette_color(uint8_t index, PaletteEntry color);
+    void    ramdac_set_palette_color(uint8_t index, PaletteEntry *color);
 
 #ifdef __cplusplus
 }

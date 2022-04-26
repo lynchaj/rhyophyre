@@ -49,6 +49,10 @@ void draw_star(uint16_t x, uint16_t y, uint16_t length, int level)
 
 int main(int argc, char **argv)
 {
+    // Avoid compiler warnings
+    argc;
+    argv;
+
     const int do_init = 1;
     const int Xmax = 640, Ymax = 480;
 
