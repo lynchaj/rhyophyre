@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     argc;
     argv;
 
-    const int do_init = 1;
+//    const int do_init = 1;
     const int Xmax = 640, Ymax = 480;
 
 #if 0
@@ -84,13 +84,13 @@ int main(int argc, char **argv)
         if (have_error) break;
     }
 #endif
-    if (do_init) {
+//    if (do_init) {
         printf("Initializing video system...\n");
         if (!init_gdc_system(MODE_640X480)) {
             printf("Failed to initialize UPD7220 video.\n");
             return 1;
         }
-    }
+//    }
 
     draw_star(Xmax/2, Ymax/2, 150, 0);
 

@@ -1,6 +1,7 @@
-CC=zcc +cpm 
-#CFLAGS := -O2 -Wall -Werror -DDEBUG=1
-CFLAGS := -O2 -Wall -DDEBUG=1
+CC=zcc +cpm
+CFLAGS := -Wall -Werror -DDEBUG=1
+#CFLAGS := -Wall -DDEBUG=1
+OFLAG=-O2
 
 all: KOCH.COM D7220.COM SHOWPCX.COM
 

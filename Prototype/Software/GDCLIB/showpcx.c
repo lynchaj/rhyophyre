@@ -83,15 +83,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: %s file.pcx\n", argv[0]);
         return 1;
     }
-    const int do_init = 1;
-    if (do_init) {
-        printf("Initializing video system...\n");
-        if (!init_gdc_system(MODE_640X480)) {
-            printf("Failed to initialize UPD7220 video.\n");
-            return 1;
-        }
+    printf("Initializing video system...\n");
+    if (!init_gdc_system(MODE_640X480)) {
+        printf("Failed to initialize UPD7220 video.\n");
+        return 1;
     }
-
 
     PCXHeader pcx_header;
 
@@ -126,7 +122,7 @@ int main(int argc, char **argv)
 #endif
     gdc_display(0);
     for (int i = 0; i < 16; i++) {
-        ramdac_set_palette_color(i, pcx_header.Palette[i]);
+        ramdac_set_palette_color(i, &pcx_header.Palette[i]);
     }
 
     create_planes(fd, height, width, path);
