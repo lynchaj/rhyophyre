@@ -333,13 +333,12 @@ void gdc_setcursor_by_addr(uint32_t address, int wg_bit)
 /* void gdc_curs(void); */
 void gdc_setcursor(uint16_t X, uint16_t Y)	/* set the graphic cursor position */
 {
-    uint32_t offset;
+    int32_t offset;
     uint32_t address;
     
     offset = Y * Ypitch_wds + (X >> 4);
-	offset -= (scroll * Ypitch_wds);
-	if (offset < 0)
-		offset += (Ypitch_wds * Ymax);
+    offset -= (scroll * Ypitch_wds);
+    if (offset < 0) offset += (Ypitch_wds * Ymax);
     address = start_address + offset;
 
     gdc_putc(0x49);	/* CURS command */
@@ -880,7 +879,7 @@ int init_gdc_system(uint8_t video_mode)
     if (video_mode == MODE_640X480) { 
         Xmax = 640;  // only with 25.175 MHz pix-clock
         Ymax = 480;					// lines on screen
-		Ytot = (int32_t)((32 * 1024 * 16) / (uint32_t)Xmax);	// lines in buffer
+	Ytot = (int32_t)((32 * 1024 * 16) / (uint32_t)Xmax);	// lines in buffer
         Ypitch = 640;       /* must fit in 32K x 16 */
         Ypitch_wds = Ypitch/16;
 

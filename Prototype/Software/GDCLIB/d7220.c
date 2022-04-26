@@ -5,7 +5,7 @@
 /* Write a checkboard pattern as a video stress test. */
 
 void write_checkboard_pattern() {
-    uint16_t temp_buf[19200];
+    static uint16_t temp_buf[19200];
     uint16_t *t = temp_buf;
     for (uint16_t y = 0; y < 480; y++) {
         for (uint16_t x = 0; x < 640/16; x++) {
