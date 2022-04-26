@@ -57,12 +57,11 @@ typedef enum GDC_Command {
 */
 } GDC_Command;
 
-
-
 unsigned char dbglvl;
-uint16_t Xmax, Ymax, Ypitch;	/* all in pixels */
+uint16_t Xmax, Ymax, Ytot, Ypitch;	/* all in pixels */
 uint16_t Ypitch_wds;
-long start_address;
+uint32_t start_address;
+int16_t scroll;
 uint8_t HFP, HS, HBP;	/* front porch, h-sync, back porch */
 uint8_t Mode;		/* drawing mode */
 uint8_t Zoom_Display, Zoom_Draw;
@@ -122,20 +121,20 @@ void ramdac_overlay(uint8_t overlay)
    outp(ramdac_latch, (overlay & LATCH_OVERLAY_MASK) | LATCH_RAMDAC_256);
 }
 
-void ramdac_set_overlay_color(uint8_t overlay, PaletteEntry color)
+void ramdac_set_overlay_color(uint8_t overlay, PaletteEntry *color)
 {
    outp(ramdac_overlay_wr, overlay);
-   outp(ramdac_overlay_ram, color.Red);
-   outp(ramdac_overlay_ram, color.Green);
-   outp(ramdac_overlay_ram, color.Blue);
+   outp(ramdac_overlay_ram, color->Red);
+   outp(ramdac_overlay_ram, color->Green);
+   outp(ramdac_overlay_ram, color->Blue);
 }
 
-void ramdac_set_palette_color(uint8_t index, PaletteEntry color)
+void ramdac_set_palette_color(uint8_t index, PaletteEntry *color)
 {
    outp(ramdac_address_wr, index);
-   outp(ramdac_palette_ram, color.Red);
-   outp(ramdac_palette_ram, color.Green);
-   outp(ramdac_palette_ram, color.Blue);
+   outp(ramdac_palette_ram, color->Red);
+   outp(ramdac_palette_ram, color->Green);
+   outp(ramdac_palette_ram, color->Blue);
    //printf("RAMDAC: set color %d: R=%d, G=%d, B=%d\n", index, color.Red, color.Green, color.Blue);
 }
 
@@ -151,11 +150,11 @@ void ramdac_init(void)
 
    ramdac_overlay(0);
    for (i=1; i<=15; ++i)
-      ramdac_set_overlay_color(i, default_palette[i]);
+      ramdac_set_overlay_color(i, &default_palette[i]);
    ramdac_overlay(8);
    ramdac_set_read_mask(0x0F);
    for (i=0; i<=15; ++i)
-      ramdac_set_palette_color(i, default_palette[i]);
+      ramdac_set_palette_color(i, &default_palette[i]);
 }
 
 void gdc_putc(uint8_t command)
@@ -334,10 +333,13 @@ void gdc_setcursor_by_addr(uint32_t address, int wg_bit)
 /* void gdc_curs(void); */
 void gdc_setcursor(uint16_t X, uint16_t Y)	/* set the graphic cursor position */
 {
-    uint16_t offset;
-    long address;
+    uint32_t offset;
+    uint32_t address;
     
     offset = Y * Ypitch_wds + (X >> 4);
+	offset -= (scroll * Ypitch_wds);
+	if (offset < 0)
+		offset += (Ypitch_wds * Ymax);
     address = start_address + offset;
 
     gdc_putc(0x49);	/* CURS command */
@@ -386,10 +388,37 @@ void gdc_config_display_area(int area_num, uint32_t address, uint16_t length, ui
     gdc_putc(0x70 + area_num * 4);
 
     gdc_putp((uint8_t)(address & 0xFF));
-    gdc_putp((uint8_t)((address >> 16) & 0xFF));
-    gdc_putp( ( ( length & 0xF ) << 4 ) | (uint8_t)( ( address >> 16 ) & 3 ) );
-    gdc_putp( (length & 0x3F) | (wide ? 0x80 : 0) ); /* IM forced to zero. */
+    gdc_putp((uint8_t)((address >> 8) & 0xFF));
+    gdc_putp(((length & 0xF) << 4) | (uint8_t)((address >> 16) & 3));
+    gdc_putp(((length >> 4)  & 0x3F) | (wide ? 0x80 : 0)); /* IM forced to zero. */
 }
+
+void gdc_scroll(int16_t lines)
+{
+	// Update scroll offset value (in display lines)
+	scroll = ((scroll + lines) % (int32_t)Ytot);
+	while (scroll < 0)
+		scroll += Ytot;
+
+	// Area 0 defines top of display to fold
+	// Start = (Ymax - Scroll) * (Xmax / 16), Length = Scroll
+	
+	// The 7220 does not seem to handle a length of zero.  So we
+	// need a special case for scroll == 0.  Ugh.
+
+	if (scroll == 0)
+		gdc_config_display_area(0, 0, Ytot, 0);
+	else
+		gdc_config_display_area(0, ((Ytot - scroll) * (Xmax / 16)), (uint16_t)scroll, 0);
+
+	// Area 1 defines fold to end of display
+	// Start =  0, Length = Ymax - Scroll
+
+	gdc_config_display_area(1, 0, (uint16_t)(Ytot - scroll), 0);
+
+	return;
+}
+
 /* init GDC, enable/blank the screen 1/0 */
 void gdc_init(uint8_t enable)
 {
@@ -441,12 +470,13 @@ void gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, ui
     }
 }
 
-void gdc_clear_screen()
+void gdc_clear_buf_lines(uint16_t buf_start_line, uint16_t buf_line_count)
 {
+	// printf("clearing @ buffer line %d for %d\n", buf_start_line, buf_line_count);
+	
     for (int plane = 0; plane < NUM_PLANES; plane++) {
-        uint16_t words_left = Xmax >> 4;
-        words_left = words_left * Ymax;
-        uint32_t cursor_addr = plane_address[plane];
+        uint16_t words_left = buf_line_count * (Xmax / 16);
+        uint32_t cursor_addr = plane_address[plane] + (buf_start_line * (Xmax / 16));
         while (words_left > 0) {
             gdc_setcursor_by_addr(cursor_addr, 0);
 
@@ -470,6 +500,76 @@ void gdc_clear_screen()
             gdc_putp(0x00);    /* LSB only */
         }
     }
+}
+
+void gdc_clear_words(uint32_t start_addr, uint16_t count)
+{
+	// uint32_t x = (start_addr / 40);
+	// uint16_t y = (count / 40);
+	// printf("clearing @ %ld for %d\n", x, y);
+	
+    for (int plane = 0; plane < NUM_PLANES; plane++) {
+        uint16_t words_left = count;
+        uint32_t cursor_addr = plane_address[plane] + start_addr;
+        while (words_left > 0) {
+            gdc_setcursor_by_addr(cursor_addr, 0);
+
+            uint16_t word_count = words_left > 16384 ? 16384 : words_left;
+            words_left =  words_left - word_count;
+            cursor_addr += word_count;
+            word_count--;
+
+            uint8_t word_count_low = (uint8_t)(word_count & 0xFF);
+            uint8_t word_count_hi = (uint8_t)((word_count >> 8) & 0x3F);
+
+            gdc_mask(0xFFFF);
+
+            gdc_putc(GDC_CMD_FIGS);    /* FIGS for WDAT */
+            gdc_putp(2);    /* direction 2 */
+            gdc_putp(word_count_low);
+            gdc_putp(word_count_hi);
+
+            gdc_putc(GDC_CMD_WDAT_WORD_REPLACE);    /* WDAT full uint16_t */
+            gdc_putp(0x00);    /* LSB only */
+            gdc_putp(0x00);    /* LSB only */
+        }
+    }
+}
+
+void gdc_clear_screen(int full)
+{
+	if (full)
+	{
+		gdc_clear_buf_lines(0, Ytot);
+	}
+	else
+	{
+		if (scroll > 0)
+			gdc_clear_buf_lines(Ytot - scroll, scroll);
+
+		if (Ymax > scroll)
+			gdc_clear_buf_lines(0, Ymax - scroll);
+	}
+
+	return;
+}
+
+void gdc_clear_lines(uint16_t start_line, uint16_t line_count)
+{
+	uint16_t buf_start_line, buf_line_count;
+
+	buf_start_line = Ytot - scroll  + start_line;
+	if (buf_start_line >= Ytot)
+		buf_start_line -= Ytot;
+	buf_line_count = line_count;
+	if ((buf_start_line + buf_line_count) >= Ytot)
+		buf_line_count = Ytot - buf_start_line;
+	gdc_clear_buf_lines(buf_start_line, buf_line_count);
+
+	buf_start_line = 0;
+	buf_line_count = line_count - buf_line_count;
+	if (buf_line_count > 0)
+		gdc_clear_buf_lines(buf_start_line, buf_line_count);
 }
 
 void gdc_hline(int x1, int x2, int y, uint8_t mode)
@@ -771,6 +871,7 @@ void color_fill2(int x1, int y1, int x2, int y2, uint8_t color)
 int init_gdc_system(uint8_t video_mode)
 {
     start_address = 0;	/* start of graphic area in display memory */
+	scroll = 0;			/* scroll offset */
     dbglvl = DEBUG;
     Mode = GDC_XOR;
     Zoom_Draw = 1;
@@ -778,7 +879,8 @@ int init_gdc_system(uint8_t video_mode)
 
     if (video_mode == MODE_640X480) { 
         Xmax = 640;  // only with 25.175 MHz pix-clock
-        Ymax = 480;
+        Ymax = 480;					// lines on screen
+		Ytot = (int32_t)((32 * 1024 * 16) / (uint32_t)Xmax);	// lines in buffer
         Ypitch = 640;       /* must fit in 32K x 16 */
         Ypitch_wds = Ypitch/16;
 
@@ -789,7 +891,7 @@ int init_gdc_system(uint8_t video_mode)
         fprintf(stderr, "Sorry, only 640x480 is supported for now.\n");
         return 0;
     }
-
+	
 #if 0    
     if (Xmax==640) Ymax = 480;
     else if (Xmax==800) Ymax = 600;    /*  4:3  aspect ratio */
@@ -810,7 +912,7 @@ int init_gdc_system(uint8_t video_mode)
 
     gdc_init(0);
 
-    gdc_clear_screen();
+    gdc_clear_screen(1);
 
     gdc_display(1);	/* unblank the display */
 
