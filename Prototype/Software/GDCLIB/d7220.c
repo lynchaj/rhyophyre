@@ -5,15 +5,17 @@
 /* Write a checkboard pattern as a video stress test. */
 
 void write_checkboard_pattern() {
-    static uint16_t temp_buf[19200];
+    //static uint16_t temp_buf[19200];
+    static uint16_t temp_buf[9600];
     uint16_t *t = temp_buf;
-    for (uint16_t y = 0; y < 480; y++) {
+    for (uint16_t y = 0; y < 240; y++) {
         for (uint16_t x = 0; x < 640/16; x++) {
             *t++ = y % 2 == 1 ? 0xAAAA : 0x5555;
         }
     }
     for (int i = 0; i < 4; i++) {
-        gdc_write_plane(i, 0, temp_buf, 19200);
+        gdc_write_plane(i, 0, temp_buf, 9600);
+        gdc_write_plane(i, 9600, temp_buf, 9600);
     }
 }
 
@@ -36,7 +38,7 @@ void draw(void)
     
     color_mode(GDC_REPLACE);
     color_setup(CLR_WHITE);
-    color_line(100,100, 78,34);	/* example from Design book */
+    color_line(100,100, 78,34); /* example from Design book */
 
     color_mode(GDC_XOR);
     color_line(10, 10, 629, 469);
@@ -61,9 +63,9 @@ void draw(void)
     color_line(599, 360-5, 599, 360-15);
 
     color_mode(GDC_OR);
-    color_line(589, 20, 593, 120);	/* missing middle segment @591 */
+    color_line(589, 20, 593, 120);  /* missing middle segment @591 */
     color_mode(GDC_REPLACE);
-    color_line(593+16, 120, 589+16, 20);	/* lo->hi, now hi->lo */
+    color_line(593+16, 120, 589+16, 20);    /* lo->hi, now hi->lo */
 
     color_mode(GDC_REPLACE);
     color_line(40, 300+5, 599, 300+5);
@@ -74,7 +76,7 @@ void draw(void)
     for (x1=32; x1<599; x1+=16) {
         x2 = x1+14;
         if (x2 > 599) x2 = 599;
-        color_line(x1, y, x2, y);		/* line skips pixel @AD15 */
+        color_line(x1, y, x2, y);       /* line skips pixel @AD15 */
     }
     color_mode(GDC_REPLACE);
     color_setup(CLR_BR_RED);
@@ -97,14 +99,24 @@ void draw(void)
 
 void delay(uint16_t n)
 {
-	for (int i = 0; i < n; i++)
-		inp(0);
+    for (int i = 0; i < n; i++)
+        inp(0);
 }
 
 void waitkey(void)
 {
-	printf("Press <return> to continue...");
-	getchar();
+    int c;
+    
+    printf("Press <return> to continue (<esc> to exit)...");
+
+    while (1)
+    {
+        c = getchar();
+        if (c == '\n')
+            return;
+        if (c == 27)
+            exit(1);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -130,7 +142,7 @@ int main(int argc, char *argv[])
     printf("Start test of upd7220.\n");
 
     // const int Xmax = 640, Ymax = 480;
-	// const int Ytot = (32 * 1024 * 16) / (uint32_t)Xmax;
+    // const int Ytot = (32 * 1024 * 16) / (uint32_t)Xmax;
 
     if (!init_gdc_system(MODE_640X480)) {
         printf("Failed to initialize UPD7220 video.\n");
@@ -152,28 +164,28 @@ int main(int argc, char *argv[])
     color_setup(CLR_MAGENTA);
     color_line(0, Ymax-1, Xmax-1, Ymax-1);
      
-	draw();
-	waitkey();
-	
-	// gdc_clear_lines(100, 100);
-	// waitkey();
+    draw();
+    waitkey();
+    
+    // gdc_clear_lines(100, 100);
+    // waitkey();
 
-	for (int i = 0; i < (Ytot + 100); i++)
-	{
-		delay(1000);
-		gdc_scroll(1);
-	}
-	waitkey();
-	
-	// gdc_clear_screen(0);
-	// draw();
-	// waitkey();
-	
-	for (int i = 0; i < (Ytot + 100); i++)
-	{
-		delay(1000);
-		gdc_scroll(-1);
-	}
+    for (int i = 0; i < (Ybuf + 100); i++)
+    {
+        delay(1000);
+        gdc_scroll(1);
+    }
+    waitkey();
+    
+    // gdc_clear_screen(0);
+    // draw();
+    // waitkey();
+    
+    for (int i = 0; i < (Ybuf + 100); i += 8)
+    {
+        delay(1000);
+        gdc_scroll(-8);
+    }
 
     gdc_done();
     printf("\nEnd test of uPD7220\n");
