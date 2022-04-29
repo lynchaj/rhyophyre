@@ -17,8 +17,8 @@ const char * usage =
     "The following special keys are accepted:\n"
     "    ctrl-A         - reverse linefeed\n"
     "    ctrl-B         - switch to next color\n";
-
-
+    
+    
 void delay(uint16_t n)
 {
     for (int i = 0; i < n; i++)
@@ -51,6 +51,9 @@ int main(int argc, char *argv[])
     int testpat = 0;
     int usedelay = 0;
     int showusage = 1;
+    uint32_t start;
+    uint16_t charcount = 0;
+    uint16_t scrollcount = 0;
 
     const char *optstring = "F:TDHI";
 
@@ -83,7 +86,8 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-
+    
+    
     printf("uPD7220 Text Display Tool (use -H for help)\n\n");
 
     if (showusage)
@@ -128,12 +132,13 @@ int main(int argc, char *argv[])
     FILE *fp;
     if (interactive)
     {
-        printf("Type stuff on CP/M console (ctrl-Z to end)...\n");
         fp = stdin;
+        freopen(NULL, "rb", stdin);
+        printf("Type stuff on CP/M console (ctrl-Z to end)...\n");
     }
     else
     {
-        if (!(fp = fopen(filename, "r")))
+        if (!(fp = fopen(filename, "rb")))
         {
             printf("ERROR: File %s could not be opened!\n", filename);
             exit(1);
@@ -147,11 +152,20 @@ int main(int argc, char *argv[])
     text_show_cursor();
     cur_color = CLR_WHITE;
     color_setup(cur_color);
+
+    start = get_ticks();
     
+    // text_hide_cursor();
+
     while ((ch = getc(fp)) != EOF)
     {
+        if (ch == 26)   // ctrl Z - EOF
+            break;
+        
         if (usedelay)
             delay(2500);
+        
+        text_hide_cursor();
 
         switch(ch)
         {
@@ -168,13 +182,17 @@ int main(int argc, char *argv[])
                 x--;
                 break;
                 
-            case '\n':
-                x = 0;
+            case 10:    // linefeed
                 y++;
+                break;
+            
+            case 13:    // return
+                x = 0;
                 break;
             
             default:
                 text_write_char(ch);
+                charcount++;
                 x++;
                 break;
         }
@@ -190,17 +208,24 @@ int main(int argc, char *argv[])
         {
             text_clear_lines(-1, 1);
             text_scroll(1);
+            scrollcount++;
             y = 0;
         }
         if (y >= 60)
         {
             text_clear_lines(60, 1);
             text_scroll(-1);
+            scrollcount++;
             y = 59;
         }
         
         text_set_cursor(y, x);
+        
+        text_show_cursor();
     }
+    
+    printf("\nTicks = %ld, Character Count = %d, Scroll Count = %d\n",
+            get_ticks() - start, charcount, scrollcount);
 
     fclose(fp);
 

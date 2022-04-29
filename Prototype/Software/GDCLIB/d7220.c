@@ -141,9 +141,6 @@ int main(int argc, char *argv[])
 
     printf("Start test of upd7220.\n");
 
-    // const int Xmax = 640, Ymax = 480;
-    // const int Ytot = (32 * 1024 * 16) / (uint32_t)Xmax;
-
     if (!init_gdc_system(MODE_640X480)) {
         printf("Failed to initialize UPD7220 video.\n");
         return 1;
@@ -167,19 +164,11 @@ int main(int argc, char *argv[])
     draw();
     waitkey();
     
-    // gdc_clear_lines(100, 100);
-    // waitkey();
-
-    for (int i = 0; i < (Ybuf + 100); i++)
-    {
+    for (int i = 0; i < (Ybuf + 100); i++)    {
         delay(1000);
         gdc_scroll(1);
     }
     waitkey();
-    
-    // gdc_clear_screen(0);
-    // draw();
-    // waitkey();
     
     for (int i = 0; i < (Ybuf + 100); i += 8)
     {
