@@ -17,8 +17,9 @@ Important construction notes:
 - U6 should be 74F32 not 74LS32, otherwise affects color palette
 - if you are seeing flicker in resulting image running test programs (D7220 or T7220) try substituting a 74LS04 for 74F04 in U47.  This eliminated flicker on my Z180GDC V1 and dramatically improved picture quality & stability
 - replace R20 with 220 ohm resistor since using the 2200 ohm resistor is too high and makes HSYNC edges too dull.  Lower resistor value improves HSYNC edge sharpness
-- Add 0.1 uF bypass capacitor behind X4 oscillator on copper side of board.  The intended C110 bypass capacitor drifted too far away from X4 and PIX-CLK gets noise jitter
-
+- add 0.1 uF bypass capacitor behind X4 oscillator on copper side of board.  The intended C110 bypass capacitor drifted too far away from X4 and PIX-CLK gets noise jitter
+- if your colors are washed out on monitor then add 75 ohm termination resistors to ground on each of RED (pin 25), GRE (pin 26), and BLU (pin 27) signals from BT478
+- if you are getting a noisy display on the "D7220 -c" checkerboard test then add 220pf capacitor to ground to pin 2 of R17 or pin 2 of JP12 
 
 
 Threshold Goals:
