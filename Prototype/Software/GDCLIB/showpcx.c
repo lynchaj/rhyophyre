@@ -99,6 +99,7 @@ int main(int argc, char **argv)
 #else
         fprintf(stderr, "Can't open file '%s' for reading\n", path);
 #endif
+        return 1;
     }
 
     parse_pcx_header(fd, &pcx_header, path);

@@ -43,6 +43,7 @@ extern "C" {
     extern uint16_t Xmax, Ymax, Ybuf;
     extern const uint8_t  Xchar, Ychar;
 
+    uint32_t get_ticks(void) __naked;
     void    color_line(int x1, int y1, int x2, int y2);
     uint8_t color_mode(uint8_t mode);
     uint8_t color_setup(uint8_t color);
