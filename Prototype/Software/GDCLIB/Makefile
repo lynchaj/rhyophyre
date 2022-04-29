@@ -17,7 +17,7 @@ SHOWPCX.COM: showpcx.o pcx.o gdc7220.o
 TEXT.COM: text.o gdc7220.o
 	$(CC) $(CFLAGS) $(OFLAG) text.o gdc7220.o -o text -create-app
 
-gdc7220.o: gdc7220.c gdc7220.h rhyophyre.h
+gdc7220.o: gdc7220.c gdc7220.h rhyophyre.h font7220.h
 koch.o: koch.c gdc7220.h
 d7220.o: d7220.c gdc7220.h
 showpcx.o: showpcx.c pcx.h gdc7220.h
