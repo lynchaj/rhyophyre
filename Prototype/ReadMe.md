@@ -33,7 +33,7 @@ Threshold Goals:
 
 Objectives:
 - GSX-80 implementation
-- uPD72020 support (CMOS version of uPD7220)
+- uPD72020 support (CMOS version of uPD7220) (met)
 - implement DMA interface for uPD7220
 - PS/2 mouse support
 - 800x600 16 color VGA display using standard monitor
