@@ -3,10 +3,12 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "pcx.h"
 #include "gdc7220.h"
-
+#include "hbios.h"
+#include "dma.h"
 #if HAVE_STRERROR
 #include <errno.h>
 #include <string.h>
@@ -22,6 +24,10 @@ uint16_t plane_index = 0;
 uint32_t plane_offset = 0;
 
 PaletteEntry palette[16];
+
+uint32_t bank_addr = 0;
+
+int use_dma = 0;
 
 #if USE_PPM
 FILE *ppm_file = NULL;
@@ -55,12 +61,20 @@ void write_planes(uint16_t plane0, uint16_t plane1, uint16_t plane2, uint16_t pl
     plane3_buf[plane_index] = plane3;
     plane_index++;
     if (plane_index == PLANE_BUFFER_SIZE_IN_WORDS) {
-        gdc_write_plane(0, plane_offset, plane0_buf, plane_index);
+        if (use_dma) {
+            uint16_t plane0_addr = (uint16_t) plane0_buf;
+            uint32_t source_addr0 = bank_addr + plane0_addr;
+            setup_z180_dma(source_addr0, 0x90, plane_index * 2);
+            gdc_write_plane_dma(0, plane_offset, plane_index);
+        } else {
+            gdc_write_plane(0, plane_offset, plane0_buf, plane_index);
+        }
         gdc_write_plane(1, plane_offset, plane1_buf, plane_index);
         gdc_write_plane(2, plane_offset, plane2_buf, plane_index);
         gdc_write_plane(3, plane_offset, plane3_buf, plane_index);
         plane_offset += plane_index;
-        printf("Processed %ld of 307200 pixels.\n", plane_offset << 4);
+        uint32_t timer_tick = hbios_get_timer_tick();
+        printf("Processed %ld of 307200 pixels. HBIOS timer is at %ld\n", plane_offset << 4, timer_tick);
         plane_index = 0;
 #if USE_PPM
         uint32_t num_pixels = PLANE_BUFFER_SIZE_IN_WORDS;
@@ -68,6 +82,12 @@ void write_planes(uint16_t plane0, uint16_t plane1, uint16_t plane2, uint16_t pl
         write_ppm_pixels(num_pixels);
 #endif
     }
+}
+
+void usage(const char *progname)
+{
+    fprintf(stderr, "Usage: %s [-d] file.pcx\n", progname);
+    exit(1);
 }
 
 int main(int argc, char **argv)
@@ -79,10 +99,30 @@ int main(int argc, char **argv)
     printf("www.RetroBrewComputers.org                  GPL 2.0\r\n");
     printf("---------------------------------------------------\r\n");
 
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s file.pcx\n", argv[0]);
-        return 1;
+    const char *optstring = "D";
+
+    int ch = 0, have_error = 0;
+    while ((ch = getopt(argc, argv, optstring)) != -1) {
+        switch (ch) {
+            case 'D':
+            case 'd':
+                use_dma = 1;
+                break;
+            case '?':
+            default:
+                have_error = 1;
+                break;
+        }
+        if (have_error) break;
     }
+
+    if (have_error) usage(argv[0]);
+
+    argc -= optind;
+    argv += optind;
+
+    if (argc != 1) usage(argv[0]);
+
     printf("Initializing video system...\n");
     if (!init_gdc_system(MODE_640X480)) {
         printf("Failed to initialize UPD7220 video.\n");
@@ -91,7 +131,7 @@ int main(int argc, char **argv)
 
     PCXHeader pcx_header;
 
-    const char *path = argv[1];
+    const char *path = argv[0];
     int fd = open(path, O_RDONLY, 0);
     if (fd < 0) {
 #if HAVE_STRERROR
@@ -104,7 +144,11 @@ int main(int argc, char **argv)
 
     parse_pcx_header(fd, &pcx_header, path);
     print_pcx_header(&pcx_header);
-
+    bank_addr = hbios_get_bank() & 0x7F;
+    printf("bank addr step 1 = 0x%08lx\n", bank_addr);
+    bank_addr <<= 15;
+    printf("bank addr step 2 = 0x%08lx\n", bank_addr);
+    printf("Bank address = 0x%08lx\n", bank_addr);
 
     uint16_t height = pcx_header.YEnd - pcx_header.YStart + 1;
     uint16_t width  = pcx_header.XEnd - pcx_header.XStart + 1;
@@ -121,7 +165,7 @@ int main(int argc, char **argv)
     fprintf(ppm_file, "%d %d\n", width, height);
     fprintf(ppm_file, "255\n");
 #endif
-    gdc_display(0);
+    gdc_display(1);
     for (int i = 0; i < 16; i++) {
         ramdac_set_palette_color(i, &pcx_header.Palette[i]);
     }

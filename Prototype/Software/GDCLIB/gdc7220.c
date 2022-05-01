@@ -9,18 +9,6 @@
 #define NUM_PLANES 4
 #define UPD7220A   1
 
-/* the GDC 7220 status bits:   */
-typedef enum GDC_Status {
-//  GDC_DATA_READY      = 0x01,
-    GDC_FIFO_FULL       = 0x02,
-    GDC_FIFO_EMPTY      = 0x04,
-    GDC_DRAWING         = 0x08,
-//  GDC_DMA_EXEC        = 0x10,
-//  GDC_VERT_SYNC       = 0x20,
-//  GDC_HORIZ_SYNC      = 0x40,
-//  GDC_LIGHT_PEN       = 0x80,
-} GDC_Status;
-
 /* GDC 7220 mode bits:   0 0 C F I D G S */
 #define Graphics 0x12
 
@@ -43,6 +31,8 @@ typedef enum GDC_Command {
     GDC_CMD_VSYNC_MODE_SECONDARY  = 0x6E,
     GDC_CMD_VSYNC_MODE_PRIMARY    = 0x6F,
     GDC_CMD_WDAT_WORD_REPLACE     = 0x20,
+
+    GDC_CMD_DMAW_WORD_REPLACE     = 0x24,
 /*
     GDC_CMD_WDAT_LBYTE_REPLACE    = 0x30,
     GDC_CMD_WDAT_HBYTE_REPLACE    = 0x38,
@@ -229,6 +219,8 @@ void gdc_putp(uint8_t parameter)
     while (inp(gdc_status) & GDC_FIFO_FULL) ;   /* spin here */
     outp(gdc_param, parameter);
 }
+
+
 
 // Dan is using these parameters in t7220.asm:
 // SYNCP:  .DB             012H,026H,044H,004H,002H,00AH,0E0H,085H
@@ -531,6 +523,31 @@ void gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, ui
     }
 
     Mode = 0xFF;  // Saved mode value is now invalid, reflect this!
+}
+
+void gdc_write_plane_dma(uint8_t plane_num, uint32_t offset, uint16_t num_words)
+{
+    num_words--;
+    gdc_setcursor_by_addr(plane_address[plane_num] + offset, 0); /* DON'T set the wg bit */
+    gdc_mask(0xFFFF);
+
+    gdc_putc(GDC_CMD_FIGS);    /* FIGS for DMAW */
+    gdc_putp(2);    /* direction 2 */
+    gdc_putp(0); /* DC lo = 0 */
+    gdc_putp(0); /* DC hi = 0 */
+    gdc_putp(num_words & 0xFF); /* D lo */
+    gdc_putp((num_words >> 8) & 0xFF); /* D hi */
+    gdc_putc(GDC_CMD_DMAW_WORD_REPLACE);
+
+    printf("Waiting for DMA EXECUTE to assert.\n");
+    while ( ( inp(gdc_status) & GDC_DMA_EXEC ) == 0);	/* spin here */
+    printf("gdc_status 1 = 0x%2x\n", inp(gdc_status));
+    printf("DMA EXECUTE asserted. Waiting for it to finish.\n");
+    while ( inp(gdc_status) & GDC_DMA_EXEC ) {
+        printf("BCR1: hi = %02x, lo = 0x%2x\n", inp(0x2f), inp(0x2e));
+    }/* spin again */
+    printf("gdc_status 2 = 0x%2x\n", inp(gdc_status));
+    printf("DMA write done.\n");
 }
 
 void gdc_clear_buf_lines(uint16_t buf_start_line, uint16_t buf_line_count)
