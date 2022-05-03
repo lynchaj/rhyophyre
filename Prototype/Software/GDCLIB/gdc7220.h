@@ -36,6 +36,19 @@ typedef struct PaletteEntry {
     uint8_t Red, Green, Blue;
 } PaletteEntry;
 
+/* the GDC 7220 status bits:   */
+typedef enum GDC_Status {
+//  GDC_DATA_READY		= 0x01,
+    GDC_FIFO_FULL		= 0x02,
+    GDC_FIFO_EMPTY		= 0x04,
+    GDC_DRAWING		    = 0x08,
+    GDC_DMA_EXEC		= 0x10,
+//  GDC_VERT_SYNC		= 0x20,
+//  GDC_HORIZ_SYNC		= 0x40,
+//  GDC_LIGHT_PEN		= 0x80,
+} GDC_Status;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -55,6 +68,7 @@ extern "C" {
     void    gdc_hline(int x1, int x2, int y, uint8_t mode);
     void    gdc_pattern(uint16_t pattern);
     void    gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, uint16_t num_words);
+    void    gdc_write_plane_dma(uint8_t plane_num, uint32_t offset, uint16_t num_words);
     void    gdc_scroll(int16_t lines);
     void    text_write_char(uint8_t c);
     void    text_set_cursor(uint8_t y, uint8_t x);
