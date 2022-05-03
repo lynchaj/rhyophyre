@@ -90,7 +90,7 @@ void write_planes(uint16_t plane0, uint16_t plane1, uint16_t plane2, uint16_t pl
         }
         plane_offset += plane_index;
         //uint32_t timer_tick = hbios_get_timer_tick();
-        printf("Processed %ld of 307200 pixels via DMA.\n", plane_offset << 4);
+        printf("Processed %ld of 307200 pixels via %s.\n", plane_offset << 4, use_dma ? "DMA" : "WDAT");
 
         plane_index = 0;
 #if USE_PPM
@@ -104,6 +104,7 @@ void write_planes(uint16_t plane0, uint16_t plane1, uint16_t plane2, uint16_t pl
 void usage(const char *progname)
 {
     fprintf(stderr, "Usage: %s [-d] file.pcx\n", progname);
+    fprintf(stderr, "    -d    Use DMA for pixel writing. Default is to use WDAT.\n");
     exit(1);
 }
 
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
 {
     // print out a DRI style welcome
     printf("---------------------------------------------------\r\n");
-    printf("SHOWPCX    0.0.1  A                     08 Apr 2022\r\n");
+    printf("SHOWPCX    0.0.5                        03 May 2022\r\n");
     printf("Copyright (C) 2022                        Rob Gowin\r\n");
     printf("www.RetroBrewComputers.org                  GPL 2.0\r\n");
     printf("---------------------------------------------------\r\n");
@@ -133,7 +134,7 @@ int main(int argc, char **argv)
         if (have_error) break;
     }
 
-    if (have_error) usage(argv[0]);
+    if (have_error) usage("SHOWPCX");
 
     argc -= optind;
     argv += optind;
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
     }
 
     parse_pcx_header(fd, &pcx_header, path);
-    print_pcx_header(&pcx_header);
+//    print_pcx_header(&pcx_header);
     bank_addr = hbios_get_bank() & 0x7F;
     bank_addr <<= 15;
     printf("Bank address = 0x%08lx\n", bank_addr);
