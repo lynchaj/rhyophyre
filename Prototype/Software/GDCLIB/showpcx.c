@@ -65,16 +65,33 @@ void write_planes(uint16_t plane0, uint16_t plane1, uint16_t plane2, uint16_t pl
             uint16_t plane0_addr = (uint16_t) plane0_buf;
             uint32_t source_addr0 = bank_addr + plane0_addr;
             setup_z180_dma(source_addr0, 0x90, plane_index * 2);
-            gdc_write_plane_dma(0, plane_offset, plane_index);
+            gdc_write_plane_dma(0, plane_offset, plane_index * 2);
+
+            uint16_t plane1_addr = (uint16_t) plane1_buf;
+            uint32_t source_addr1 = bank_addr + plane1_addr;
+            setup_z180_dma(source_addr1, 0x90, plane_index * 2);
+            gdc_write_plane_dma(1, plane_offset, plane_index * 2);
+
+            uint16_t plane2_addr = (uint16_t) plane2_buf;
+            uint32_t source_addr2 = bank_addr + plane2_addr;
+            setup_z180_dma(source_addr2, 0x90, plane_index * 2);
+            gdc_write_plane_dma(2, plane_offset, plane_index * 2);
+
+            uint16_t plane3_addr = (uint16_t) plane3_buf;
+            uint32_t source_addr3 = bank_addr + plane3_addr;
+            setup_z180_dma(source_addr3, 0x90, plane_index * 2);
+            gdc_write_plane_dma(3, plane_offset, plane_index * 2);
+
         } else {
             gdc_write_plane(0, plane_offset, plane0_buf, plane_index);
+            gdc_write_plane(1, plane_offset, plane1_buf, plane_index);
+            gdc_write_plane(2, plane_offset, plane2_buf, plane_index);
+            gdc_write_plane(3, plane_offset, plane3_buf, plane_index);
         }
-        gdc_write_plane(1, plane_offset, plane1_buf, plane_index);
-        gdc_write_plane(2, plane_offset, plane2_buf, plane_index);
-        gdc_write_plane(3, plane_offset, plane3_buf, plane_index);
         plane_offset += plane_index;
-        uint32_t timer_tick = hbios_get_timer_tick();
-        printf("Processed %ld of 307200 pixels. HBIOS timer is at %ld\n", plane_offset << 4, timer_tick);
+        //uint32_t timer_tick = hbios_get_timer_tick();
+        printf("Processed %ld of 307200 pixels via DMA.\n", plane_offset << 4);
+
         plane_index = 0;
 #if USE_PPM
         uint32_t num_pixels = PLANE_BUFFER_SIZE_IN_WORDS;
@@ -145,9 +162,7 @@ int main(int argc, char **argv)
     parse_pcx_header(fd, &pcx_header, path);
     print_pcx_header(&pcx_header);
     bank_addr = hbios_get_bank() & 0x7F;
-    printf("bank addr step 1 = 0x%08lx\n", bank_addr);
     bank_addr <<= 15;
-    printf("bank addr step 2 = 0x%08lx\n", bank_addr);
     printf("Bank address = 0x%08lx\n", bank_addr);
 
     uint16_t height = pcx_header.YEnd - pcx_header.YStart + 1;

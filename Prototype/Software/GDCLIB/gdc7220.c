@@ -10,7 +10,7 @@
 #define UPD7220A   1
 
 /* GDC 7220 mode bits:   0 0 C F I D G S */
-#define Graphics 0x12
+#define Graphics 0x16
 
 /* Latch bits */
 #define LATCH_RAMDAC_256      0x80     /* 256 color mode */
@@ -525,9 +525,8 @@ void gdc_write_plane(uint8_t plane_num, uint32_t offset, const uint16_t *buf, ui
     Mode = 0xFF;  // Saved mode value is now invalid, reflect this!
 }
 
-void gdc_write_plane_dma(uint8_t plane_num, uint32_t offset, uint16_t num_words)
+void gdc_write_plane_dma(uint8_t plane_num, uint32_t offset, uint16_t num_bytes)
 {
-    num_words--;
     gdc_setcursor_by_addr(plane_address[plane_num] + offset, 0); /* DON'T set the wg bit */
     gdc_mask(0xFFFF);
 
@@ -535,19 +534,17 @@ void gdc_write_plane_dma(uint8_t plane_num, uint32_t offset, uint16_t num_words)
     gdc_putp(2);    /* direction 2 */
     gdc_putp(0); /* DC lo = 0 */
     gdc_putp(0); /* DC hi = 0 */
-    gdc_putp(num_words & 0xFF); /* D lo */
-    gdc_putp((num_words >> 8) & 0xFF); /* D hi */
+    num_bytes--;
+    gdc_putp(num_bytes & 0xFF); /* D lo */
+    gdc_putp((num_bytes >> 8) & 0xFF); /* D hi */
     gdc_putc(GDC_CMD_DMAW_WORD_REPLACE);
 
-    printf("Waiting for DMA EXECUTE to assert.\n");
-    while ( ( inp(gdc_status) & GDC_DMA_EXEC ) == 0);	/* spin here */
-    printf("gdc_status 1 = 0x%2x\n", inp(gdc_status));
-    printf("DMA EXECUTE asserted. Waiting for it to finish.\n");
-    while ( inp(gdc_status) & GDC_DMA_EXEC ) {
-        printf("BCR1: hi = %02x, lo = 0x%2x\n", inp(0x2f), inp(0x2e));
-    }/* spin again */
-    printf("gdc_status 2 = 0x%2x\n", inp(gdc_status));
-    printf("DMA write done.\n");
+    /* Wait for the GDC to say it is executing the DMA action. */
+    while ( ( inp(gdc_status) & GDC_DMA_EXEC ) == 0)
+        ;	/* spin here */
+    /* Ok, DMA is now in progress. Wait for it to finish. */
+    while ( inp(gdc_status) & GDC_DMA_EXEC ) 
+        ;       /* spin again */
 }
 
 void gdc_clear_buf_lines(uint16_t buf_start_line, uint16_t buf_line_count)
