@@ -38,3 +38,6 @@ Objectives:
 - PS/2 mouse support
 - 800x600 16 color VGA display using standard monitor
 - reduced power consumption with 74HCTxx & 74ACTxx glue logic
+
+
+Note: there is no BOM provided so you'll need to load the project in KiCAD and generate one from there.  Everything is provided to replicate this project and do your own build and test.  Please post your results!
